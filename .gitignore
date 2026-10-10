@@ -1,0 +1,31 @@
+# Build outputs
+bin/
+obj/
+dist/
+*.zip
+
+# Local paths (game install, Unity editor)
+*.local.props
+tools/package.ps1
+
+# Unity
+unity/[Ll]ibrary/
+unity/[Tt]emp/
+unity/[Oo]bj/
+unity/[Bb]uild/
+unity/[Ll]ogs/
+unity/[Uu]ser[Ss]ettings/
+unity/*.csproj
+unity/*.sln
+
+# IDE / OS
+.vs/
+.idea/
+.vscode/
+*.user
+Thumbs.db
+.DS_Store
+
+# Local docs (kept out of the public repo)
+dev-docs/
+.superpowers/

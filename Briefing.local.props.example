@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- SPT 설치 폴더 (EscapeFromTarkov_Data, BepInEx 가 있는 곳) -->
+    <SptRoot>C:\SPT</SptRoot>
+    <!-- Unity 2022.3.43f1 에디터 실행 파일 (Task 4 에서 씀) -->
+    <UnityExe>C:\Program Files\Unity\Hub\Editor\2022.3.43f1\Editor\Unity.exe</UnityExe>
+  </PropertyGroup>
+</Project>
