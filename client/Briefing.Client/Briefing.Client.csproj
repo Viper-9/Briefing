@@ -17,12 +17,27 @@
     <Reference Include="UnityEngine.AssetBundleModule"><HintPath>$(Managed)\UnityEngine.AssetBundleModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(Managed)\UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.TextRenderingModule"><HintPath>$(Managed)\UnityEngine.TextRenderingModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.VectorGraphics"><HintPath>$(Managed)\Unity.VectorGraphics.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Unity.TextMeshPro"><HintPath>$(Managed)\Unity.TextMeshPro.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Newtonsoft.Json"><HintPath>$(Managed)\Newtonsoft.Json.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="BepInEx"><HintPath>$(SptRoot)\BepInEx\core\BepInEx.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="0Harmony"><HintPath>$(SptRoot)\BepInEx\core\0Harmony.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="spt-common"><HintPath>$(SptRoot)\BepInEx\plugins\spt\spt-common.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Briefing.Core\Briefing.Core.csproj" />
+  </ItemGroup>
+  <!-- BepInPlugin 버전을 Directory.Build.props 의 <Version> 하나로 맞추려고 빌드 때 상수 파일을 만든다. -->
+  <Target Name="GenerateBuildInfo" BeforeTargets="BeforeCompile">
+    <PropertyGroup>
+      <BuildInfoFile>$(IntermediateOutputPath)BuildInfo.g.cs</BuildInfoFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(BuildInfoFile)" Lines="namespace Briefing { internal static class BuildInfo { internal const string Version = &quot;$(Version)&quot;%3B } }" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(BuildInfoFile)" />
+      <FileWrites Include="$(BuildInfoFile)" />
+    </ItemGroup>
+  </Target>
   <Target Name="RequireSptRoot" BeforeTargets="ResolveAssemblyReferences;CoreCompile">
     <Error Condition="'$(SptRoot)' == ''" Text="SptRoot is not set. Create Briefing.local.props from Briefing.local.props.example and set SptRoot." />
   </Target>
