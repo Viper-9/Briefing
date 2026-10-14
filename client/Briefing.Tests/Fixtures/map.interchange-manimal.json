@@ -1,0 +1,128 @@
+{
+  "displayName": "Interchange (Expanded, TarkovDev)",
+  "internalNames": [
+    "Interchange"
+  ],
+  "coordinateRotation": 180,
+  "defaultLevel": 0,
+  "bounds": {
+    "min": {
+      "x": -433,
+      "z": -442
+    },
+    "max": {
+      "x": 598,
+      "z": 426
+    }
+  },
+  "layers": [
+    {
+      "name": "Ground Floor",
+      "level": 0,
+      "svg": "Interchange-Ground_Level.svg",
+      "viewBox": {
+        "width": 1127.6852,
+        "height": 947.02582
+      },
+      "imageBounds": {
+        "min": {
+          "x": -433,
+          "z": -442
+        },
+        "max": {
+          "x": 598,
+          "z": 426
+        }
+      },
+      "gameBounds": [
+        {
+          "min": {
+            "x": -433,
+            "y": -1000,
+            "z": -442
+          },
+          "max": {
+            "x": 598,
+            "y": 25,
+            "z": 426
+          }
+        }
+      ]
+    },
+    {
+      "name": "2nd Floor",
+      "level": 1,
+      "svg": "Interchange-First_Floor.svg",
+      "viewBox": {
+        "width": 1127.6852,
+        "height": 947.02582
+      },
+      "imageBounds": {
+        "min": {
+          "x": -433,
+          "z": -442
+        },
+        "max": {
+          "x": 598,
+          "z": 426
+        }
+      },
+      "gameBounds": [
+        {
+          "min": {
+            "x": -222,
+            "y": 25,
+            "z": -327
+          },
+          "max": {
+            "x": 120,
+            "y": 34,
+            "z": 218
+          }
+        }
+      ]
+    },
+    {
+      "name": "3rd Floor",
+      "level": 2,
+      "svg": "Interchange-Second_Floor.svg",
+      "viewBox": {
+        "width": 1127.6852,
+        "height": 947.02582
+      },
+      "imageBounds": {
+        "min": {
+          "x": -433,
+          "z": -442
+        },
+        "max": {
+          "x": 598,
+          "z": 426
+        }
+      },
+      "gameBounds": [
+        {
+          "min": {
+            "x": -222,
+            "y": 34,
+            "z": -327
+          },
+          "max": {
+            "x": 120,
+            "y": 1000,
+            "z": 218
+          }
+        }
+      ]
+    }
+  ],
+  "attribution": {
+    "author": "Shebuka",
+    "authorLink": "https://github.com/the-hideout/tarkov-dev-svg-maps",
+    "modifiedBy": null,
+    "license": "CC BY-NC-SA 4.0",
+    "licenseFile": "Shebuka-LICENSE.md",
+    "calibration": "tarkov.dev (MIT)"
+  },
+  "source": "tarkov-dev-svg-maps @ 5a8b611 (Interchange.svg, split per floor), tarkov-dev maps.json @ ef62766"
+}

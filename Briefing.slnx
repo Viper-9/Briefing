@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="client/Briefing.Core/Briefing.Core.csproj" />
   <Project Path="client/Briefing.Client/Briefing.Client.csproj" />
+  <Project Path="client/Briefing.Tests/Briefing.Tests.csproj" />
 </Solution>

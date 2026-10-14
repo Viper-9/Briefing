@@ -1,0 +1,1565 @@
+{
+ "schemaVersion": 1,
+ "questCodexVersion": "test",
+ "generatedAt": "1970-01-01T00:00:00+00:00",
+ "lang": "kr",
+ "traders": {
+  "54cb50c76803fa8b248b4571": {
+   "name": "프라퍼"
+  },
+  "54cb57776803fa99248b456e": {
+   "name": "테라피스트"
+  },
+  "579dc571d53a0658a154fbec": {
+   "name": "펜스"
+  },
+  "58330581ace78e27b8b10cee": {
+   "name": "스키어"
+  },
+  "5935c25fb3acc3127c3d8cd9": {
+   "name": "피스키퍼"
+  },
+  "5a7c2eca46aef81a7ca2145d": {
+   "name": "메카닉"
+  },
+  "5ac3b934156ae10c4430e83c": {
+   "name": "래그맨"
+  },
+  "5c0647fdd443bc2504c2d371": {
+   "name": "예거"
+  },
+  "638f541a29ffd1183d187f57": {
+   "name": "등대지기"
+  },
+  "656f0f98d80a697f855d34b1": {
+   "name": "BTR 운전병"
+  },
+  "6617beeaa9cfa777ca915b7c": {
+   "name": "레프"
+  },
+  "668aaff35fd574b6dcc4a686": {
+   "name": "Painter"
+  },
+  "66bf757f27d0b097db0acea5": {
+   "name": "Artem"
+  },
+  "6747208ef022cbbfc65c41bf": {
+   "name": "Lotus"
+  },
+  "6864e812f9fe664cb8b8e152": {
+   "name": "Storyteller"
+  }
+ },
+ "maps": [
+  {
+   "key": "bigmap",
+   "locationIds": [
+    "bigmap"
+   ],
+   "name": "세관",
+   "count": 10,
+   "hasMap": true,
+   "mapFolder": "bigmap",
+   "quests": [
+    {
+     "questId": "675c15fbf7da9792a4059871",
+     "traderId": "6617beeaa9cfa777ca915b7c",
+     "name": "Provide Viewership",
+     "marker": 1,
+     "summary": "Eliminate any target inside the industrial plant on Customs ×15",
+     "current": 6,
+     "target": 15,
+     "objectives": [
+      {
+       "conditionId": "675c1c980fd114390c638b89",
+       "text": "Eliminate any target inside the industrial plant on Customs ×15",
+       "current": 6,
+       "target": 15,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "bigmap",
+         "points": [
+          {
+           "x": 276.38,
+           "y": 2.17,
+           "z": -45.57
+          }
+         ],
+         "areas": [
+          {
+           "center": {
+            "x": 275.33,
+            "y": 2.17,
+            "z": -43.3
+           },
+           "sizeX": 31.94,
+           "sizeZ": 73.07,
+           "yaw": 11.44,
+           "minY": -0.2,
+           "maxY": 17.41
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "questId": "60e71b9bbd90872cb85440f3",
+     "traderId": "54cb50c76803fa8b248b4571",
+     "name": "요충지 탈환",
+     "marker": 2,
+     "summary": "세관(Customs)의 스캐브 기지에서 PMC 사살하기 ×8",
+     "current": 0,
+     "target": 8,
+     "objectives": [
+      {
+       "conditionId": "60ec18b73b5f7d790a7ad034",
+       "text": "세관(Customs)의 스캐브 기지에서 PMC 사살하기 ×8",
+       "current": 0,
+       "target": 8,
+       "inferredMap": true,
+       "locations": [
+        {
+         "map": "bigmap",
+         "points": [
+          {
+           "x": 202.68,
+           "y": 7.91,
+           "z": -126.77
+          }
+         ],
+         "areas": [
+          {
+           "center": {
+            "x": 202.68,
+            "y": 7.91,
+            "z": -126.77
+           },
+           "sizeX": 40,
+           "sizeZ": 75,
+           "yaw": 349.34,
+           "minY": -4.24,
+           "maxY": 20.06
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "questId": "5a27ba1c86f77461ea5a3c56",
+     "traderId": "5935c25fb3acc3127c3d8cd9",
+     "name": "광신도 - 파트 2",
+     "marker": 3,
+     "summary": "세관(Customs)에 있는 종교의식 현장에 MS2000 마커 설치하기 ×1",
+     "current": 0,
+     "target": 1,
+     "objectives": [
+      {
+       "conditionId": "5a2806b386f77420062f0fbd",
+       "text": "세관(Customs)에 있는 종교의식 현장에 MS2000 마커 설치하기 ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": true,
+       "locations": [
+        {
+         "map": "bigmap",
+         "points": [
+          {
+           "x": 184.14,
+           "y": 7.25,
+           "z": 183.42
+          }
+         ],
+         "areas": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "questId": "684009026ceedc792c09b2a7",
+     "traderId": "5a7c2eca46aef81a7ca2145d",
+     "name": "Hobby Club",
+     "marker": 4,
+     "summary": "목표 4개",
+     "current": 0,
+     "target": 4,
+     "objectives": [
+      {
+       "conditionId": "685e95c44b14e68996ad6590",
+       "text": "Stash the AK-50 body at the specified spot on Customs ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": true,
+       "locations": [
+        {
+         "map": "bigmap",
+         "points": [
+          {
+           "x": 500.64,
+           "y": 17.86,
+           "z": 91.87
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "685e95d28ba62d57a3235675",
+       "text": "Stash the AK-50 handguard at the specified spot on Customs ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": true,
+       "locations": [
+        {
+         "map": "bigmap",
+         "points": [
+          {
+           "x": 500.64,
+           "y": 17.86,
+           "z": 91.87
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "685e95def338135da83ff978",
+       "text": "Stash the AK-50 barrel at the specified spot on Customs ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": true,
+       "locations": [
+        {
+         "map": "bigmap",
+         "points": [
+          {
+           "x": 500.64,
+           "y": 17.86,
+           "z": 91.87
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "685e95f0ac5f975749f6c1f3",
+       "text": "Stash the AK-50 dust cover at the specified spot on Customs ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": true,
+       "locations": [
+        {
+         "map": "bigmap",
+         "points": [
+          {
+           "x": 500.64,
+           "y": 17.86,
+           "z": 91.87
+          }
+         ],
+         "areas": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "questId": "5c0bde0986f77479cf22c2f8",
+     "traderId": "5a7c2eca46aef81a7ca2145d",
+     "name": "천국에서 태어난 저격수",
+     "marker": null,
+     "summary": "세관(Customs)에서 볼트액션 소총을 사용하여 헤드샷으로 PMC 사살하기 ×5",
+     "current": 4,
+     "target": 5,
+     "objectives": [
+      {
+       "conditionId": "5c137f5286f7747ae267d8a3",
+       "text": "세관(Customs)에서 볼트액션 소총을 사용하여 헤드샷으로 PMC 사살하기 ×5",
+       "current": 4,
+       "target": 5,
+       "inferredMap": false,
+       "locations": []
+      }
+     ]
+    },
+    {
+     "questId": "5c0d4e61d09282029f53920e",
+     "traderId": "5935c25fb3acc3127c3d8cd9",
+     "name": "안내자",
+     "marker": null,
+     "summary": "세관(Customs)에서 \"생존(Survived)\" 상태로 탈출하기 ×1",
+     "current": 0,
+     "target": 1,
+     "objectives": [
+      {
+       "conditionId": "5c0e687ad0928202b25db840",
+       "text": "세관(Customs)에서 \"생존(Survived)\" 상태로 탈출하기 ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": []
+      }
+     ]
+    },
+    {
+     "questId": "675c1d6d59b0575973008fc7",
+     "traderId": "5935c25fb3acc3127c3d8cd9",
+     "name": "Seizing the Initiative",
+     "marker": null,
+     "summary": "Use the transit from Customs to Shoreline ×1",
+     "current": 0,
+     "target": 1,
+     "objectives": [
+      {
+       "conditionId": "675c1d6d59b0575973008fc9",
+       "text": "Use the transit from Customs to Shoreline ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": []
+      }
+     ]
+    }
+   ],
+   "bring": [
+    {
+     "items": [
+      {
+       "tpl": "5991b51486f77447b112d44f",
+       "name": "MS2000 마커 "
+      }
+     ],
+     "need": 1,
+     "have": 1,
+     "fir": false,
+     "missing": 0,
+     "sources": [
+      {
+       "questId": "5a27ba1c86f77461ea5a3c56",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "items": [
+      {
+       "tpl": "67d0576f29f580ebc10efd08",
+       "name": "TheAKGuy AK-50 .50 BMG sniper rifle"
+      }
+     ],
+     "need": 1,
+     "have": 0,
+     "fir": false,
+     "missing": 1,
+     "sources": [
+      {
+       "questId": "684009026ceedc792c09b2a7",
+       "count": 1
+      }
+     ]
+    }
+   ],
+   "find": [
+    {
+     "place": "unknown",
+     "items": [
+      {
+       "tpl": "64a536392d2c4e6e970f4121",
+       "name": "WARTECH TV-115 plate carrier (Olive Drab)"
+      },
+      {
+       "tpl": "5ca20d5986f774331e7c9602",
+       "name": "WARTECH Berkut BB-102 배낭 (A-TACS FG)"
+      },
+      {
+       "tpl": "5c0e746986f7741453628fe5",
+       "name": "WARTECH TV-110 플레이트 캐리어 (Coyote)"
+      },
+      {
+       "tpl": "5ab8dab586f77441cd04f2a2",
+       "name": "WARTECH MK3 TV-104 체스트 리그 (MultiCam)"
+      },
+      {
+       "tpl": "59e7643b86f7742cbf2c109a",
+       "name": "WARTECH TV-109 + TV-106 체스트 리그 (A-TACS FG)"
+      }
+     ],
+     "need": 50,
+     "have": 3,
+     "fir": true,
+     "missing": 47,
+     "sources": [
+      {
+       "questId": "66151401efb0539ae10875ae",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "place": "unknown",
+     "items": [
+      {
+       "tpl": "57347c1124597737fb1379e3",
+       "name": "Duct tape 덕트 테이프 "
+      }
+     ],
+     "need": 3,
+     "have": 0,
+     "fir": true,
+     "missing": 3,
+     "sources": [
+      {
+       "questId": "668aacd1dee3de3ce276fdef",
+       "count": 3
+      }
+     ]
+    }
+   ],
+   "gear": [
+    {
+     "questId": "5c0bde0986f77479cf22c2f8",
+     "rows": [
+      {
+       "label": "weapon",
+       "names": [
+        "Accuracy International AXMC .338 LM bolt-action sniper rifle",
+        "Mosin 7.62x54R 볼트액션 소총 (저격)",
+        "SV-98 7.62x54R 볼트액션 저격소총 ",
+        "LOBAEV Arms DVL-10 Saboteur 7.62x51 볼트액션 저격소총 ",
+        "ORSIS T-5000M 7.62x51 볼트액션 저격소총 ",
+        "Remington Model 700 7.62x51 볼트액션 저격소총 ",
+        "MP-18 7.62x54R single-shot rifle",
+        "Mosin 7.62x54R 볼트액션 소총 (보병)",
+        "Molot Arms VPO-215 \"Gornostay\" .366 TKM 볼트액션 소총 ",
+        "Sako TRG M10 .338 LM bolt-action sniper rifle",
+        "Remington MSR .300 WM bolt-action sniper rifle",
+        "CheyTac M200 Intervention .408 CT bolt-action sniper rifle",
+        "CheyTac M200 Intervention .408 CT bolt-action sniper rifle (FDE)",
+        "CheyTac M200 Intervention .408 CT bolt-action sniper rifle (Camo)",
+        "Marlin M1984 Dark-series .44 Magnum lever-action rifle",
+        "Surgeon Rifles 1581 XL action .338 LM bolt-action sniper rifle",
+        "Surgeon Rifles 1581 XL action .338 Norma Magnum bolt-action sniper rifle",
+        "Accuracy International AXMC .300 WM bolt-action sniper rifle",
+        "Henry Big Boy Steel .357 lever-action rifle",
+        "SV-98M 7.62x54R bolt-action sniper rifle",
+        "Marlin MXLR .308 ME lever-action rifle"
+       ],
+       "tpls": [
+        [
+         "627e14b21713922ded6f2c15"
+        ],
+        [
+         "5ae08f0a5acfc408fb1398a1"
+        ],
+        [
+         "55801eed4bdc2d89578b4588"
+        ],
+        [
+         "588892092459774ac91d4b11"
+        ],
+        [
+         "5df24cf80dee1b22f862e9bc"
+        ],
+        [
+         "5bfea6e90db834001b7347f3"
+        ],
+        [
+         "61f7c9e189e6fb1a5e3ea78d"
+        ],
+        [
+         "5bfd297f0db834001a669119"
+        ],
+        [
+         "5de652c31b7e3716273428be"
+        ],
+        [
+         "673cab3e03c6a20581028bc1"
+        ],
+        [
+         "684e32eaec9f5eb3cacc7ca7"
+        ],
+        [
+         "68fd4feab87d77a5aaf6bf64"
+        ],
+        [
+         "68fd7a61f2b8d96bb3119b19"
+        ],
+        [
+         "68fd7d14ff5a09197b5ab82a"
+        ],
+        [
+         "69417a3f787395b8cc0ab13e"
+        ],
+        [
+         "deee28079e76d537f532021c"
+        ],
+        [
+         "1bf618e47cce6d69bec01e9f"
+        ],
+        [
+         "68a3836826dffa87b5767c04"
+        ],
+        [
+         "6924c2f800ff4b8d9d689a5c"
+        ],
+        [
+         "69236a0b2d1260dbca41ef92"
+        ],
+        [
+         "67c6de3ce39861860909e8e5"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "special": [
+    {
+     "questId": "5c0d4e61d09282029f53920e",
+     "rows": [
+      {
+       "kind": "exit",
+       "exitStatuses": [
+        "Survived",
+        "Transit"
+       ],
+       "exitName": null
+      }
+     ]
+    },
+    {
+     "questId": "675c1d6d59b0575973008fc7",
+     "rows": [
+      {
+       "kind": "oneRaid",
+       "exitStatuses": [],
+       "exitName": null
+      },
+      {
+       "kind": "exit",
+       "exitStatuses": [
+        "Transit"
+       ],
+       "exitName": null
+      }
+     ]
+    }
+   ],
+   "exits": [
+    {
+     "key": "EXFIL_ZB013",
+     "name": "ZB-013",
+     "kind": "pmc",
+     "position": {
+      "x": 200.98,
+      "y": -1.15,
+      "z": -153.09
+     },
+     "requirement": null,
+     "requirementKind": "switch",
+     "chance": null,
+     "target": null
+    },
+    {
+     "key": "Dorms V-Ex",
+     "name": "Dorms V-Ex",
+     "kind": "pmc",
+     "position": {
+      "x": 181.08,
+      "y": -0.71,
+      "z": 213.25
+     },
+     "requirement": "5,000 루블 필요",
+     "requirementKind": null,
+     "chance": 50,
+     "target": null
+    }
+   ],
+   "lockedDoors": [
+    {
+     "keyTpl": "5448ba0b4bdc2d02308b456c",
+     "keyName": "Factory emergency exit key",
+     "kind": "door",
+     "position": {
+      "x": 198.93,
+      "y": -1.78,
+      "z": -146.17
+     },
+     "code": null
+    },
+    {
+     "keyTpl": "5448ba0b4bdc2d02308b456c",
+     "keyName": "Factory emergency exit key",
+     "kind": "door",
+     "position": {
+      "x": 356.05,
+      "y": 2.34,
+      "z": -14.57
+     },
+     "code": null
+    }
+   ]
+  },
+  {
+   "key": "factory4_day",
+   "locationIds": [
+    "factory4_day",
+    "factory4_night"
+   ],
+   "name": "공장",
+   "count": 14,
+   "hasMap": true,
+   "mapFolder": "factory4_day",
+   "quests": [
+    {
+     "questId": "669fa394e0c9f9fafa082897",
+     "traderId": "5a7c2eca46aef81a7ca2145d",
+     "name": "Forklift Certified",
+     "marker": 1,
+     "summary": "목표 11개",
+     "current": 0,
+     "target": 11,
+     "objectives": [
+      {
+       "conditionId": "669fafa09a13dcb8bf66e6bd",
+       "text": "Locate the second forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 71.02,
+           "y": 1.16,
+           "z": -40.93
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "669fafa1d0fe63abcf15fac8",
+       "text": "Locate the third forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 64.97,
+           "y": 1.16,
+           "z": -47.28
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "669fafa2394f7353883ffd8d",
+       "text": "Locate the fourth forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": -31.57,
+           "y": 2.33,
+           "z": 57.84
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "669fafa49bf4b277e24f3681",
+       "text": "Locate the fifth forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 22.58,
+           "y": 1.16,
+           "z": -23.83
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "669fafa5f597899ad6bc55bb",
+       "text": "Locate the sixth forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 21.87,
+           "y": 1.16,
+           "z": -30.78
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "669fafa76172f63531f6e74d",
+       "text": "Locate the seventh forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 12.37,
+           "y": 1.16,
+           "z": 30.42
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "669fafa9299830ffe78e937d",
+       "text": "Locate the eighth forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": -15.77,
+           "y": 2.26,
+           "z": 32.58
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "66a80f20fe47046136f14c8b",
+       "text": "Locate the ninth forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 13.63,
+           "y": 1.16,
+           "z": -30.07
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "66bd67615936a4753b7345be",
+       "text": "Locate the tenth forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 53.37,
+           "y": 1.48,
+           "z": -22.46
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "66bd6765b9e77d3672edfeee",
+       "text": "Locate the eleventh forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 18.3,
+           "y": 1.49,
+           "z": -15.19
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "66c2331d75e8aa67fbf65930",
+       "text": "Locate the twelfth forklift on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 58.32,
+           "y": 1.73,
+           "z": 58.98
+          }
+         ],
+         "areas": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "questId": "669fa39c64ea11e84c0642a6",
+     "traderId": "58330581ace78e27b8b10cee",
+     "name": "The Walls Have Eyes",
+     "marker": 2,
+     "summary": "목표 3개",
+     "current": 0,
+     "target": 3,
+     "objectives": [
+      {
+       "conditionId": "669fb5c58c03e61e1a33ddf0",
+       "text": "Install a WI-FI Camera in the first crane's cockpit on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": 63.61,
+           "y": 6.44,
+           "z": 35.11
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "669fb5c7d5fbaaa7b285e83d",
+       "text": "Install a WI-FI Camera in the second crane's cockpit on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": -5.47,
+           "y": 5.78,
+           "z": -32.48
+          }
+         ],
+         "areas": []
+        }
+       ]
+      },
+      {
+       "conditionId": "669fb5c9d798aa41b9bd60b5",
+       "text": "Install a WI-FI Camera in the third crane's cockpit on Factory ×1",
+       "current": 0,
+       "target": 1,
+       "inferredMap": false,
+       "locations": [
+        {
+         "map": "factory4_day",
+         "points": [
+          {
+           "x": -24.44,
+           "y": 6.2,
+           "z": 60.43
+          }
+         ],
+         "areas": []
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "bring": [
+    {
+     "items": [
+      {
+       "tpl": "5b4391a586f7745321235ab2",
+       "name": "WI-FI 카메라 "
+      }
+     ],
+     "need": 3,
+     "have": 0,
+     "fir": false,
+     "missing": 3,
+     "sources": [
+      {
+       "questId": "669fa39c64ea11e84c0642a6",
+       "count": 3
+      }
+     ]
+    }
+   ],
+   "find": [
+    {
+     "place": "here",
+     "items": [
+      {
+       "tpl": "66a0f0926fee20fa70036da6",
+       "name": "Blood sample"
+      }
+     ],
+     "need": 1,
+     "have": 0,
+     "fir": false,
+     "missing": 1,
+     "sources": [
+      {
+       "questId": "669fa3a3ad7f1eac2607ed48",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "place": "unknown",
+     "items": [
+      {
+       "tpl": "64a536392d2c4e6e970f4121",
+       "name": "WARTECH TV-115 plate carrier (Olive Drab)"
+      },
+      {
+       "tpl": "5ca20d5986f774331e7c9602",
+       "name": "WARTECH Berkut BB-102 배낭 (A-TACS FG)"
+      },
+      {
+       "tpl": "5c0e746986f7741453628fe5",
+       "name": "WARTECH TV-110 플레이트 캐리어 (Coyote)"
+      },
+      {
+       "tpl": "5ab8dab586f77441cd04f2a2",
+       "name": "WARTECH MK3 TV-104 체스트 리그 (MultiCam)"
+      },
+      {
+       "tpl": "59e7643b86f7742cbf2c109a",
+       "name": "WARTECH TV-109 + TV-106 체스트 리그 (A-TACS FG)"
+      }
+     ],
+     "need": 50,
+     "have": 3,
+     "fir": true,
+     "missing": 47,
+     "sources": [
+      {
+       "questId": "66151401efb0539ae10875ae",
+       "count": 50
+      }
+     ]
+    }
+   ],
+   "gear": [],
+   "special": [],
+   "exits": [
+    {
+     "key": "Cellars",
+     "name": "Cellars",
+     "kind": "pmc",
+     "position": {
+      "x": 73.89,
+      "y": -3.29,
+      "z": -29.08
+     },
+     "requirement": null,
+     "requirementKind": null,
+     "chance": null,
+     "target": null
+    },
+    {
+     "key": "Gate 3",
+     "name": "Gate 3",
+     "kind": "shared",
+     "position": {
+      "x": 58.71,
+      "y": 1.59,
+      "z": 60.87
+     },
+     "requirement": null,
+     "requirementKind": null,
+     "chance": null,
+     "target": null
+    }
+   ],
+   "lockedDoors": [
+    {
+     "keyTpl": "5448ba0b4bdc2d02308b456c",
+     "keyName": "Factory emergency exit key",
+     "kind": "door",
+     "position": {
+      "x": -19.08,
+      "y": 1.45,
+      "z": -48.57
+     },
+     "code": null
+    },
+    {
+     "keyTpl": "5448ba0b4bdc2d02308b456c",
+     "keyName": "Factory emergency exit key",
+     "kind": "door",
+     "position": {
+      "x": 29.12,
+      "y": 9.08,
+      "z": 36.52
+     },
+     "code": null
+    }
+   ]
+  },
+  {
+   "key": "labyrinth",
+   "locationIds": [
+    "labyrinth"
+   ],
+   "name": "The Labyrinth",
+   "count": 0,
+   "hasMap": true,
+   "mapFolder": "labyrinth",
+   "quests": [],
+   "bring": [],
+   "find": [
+    {
+     "place": "unknown",
+     "items": [
+      {
+       "tpl": "64a536392d2c4e6e970f4121",
+       "name": "WARTECH TV-115 plate carrier (Olive Drab)"
+      },
+      {
+       "tpl": "5ca20d5986f774331e7c9602",
+       "name": "WARTECH Berkut BB-102 배낭 (A-TACS FG)"
+      },
+      {
+       "tpl": "5c0e746986f7741453628fe5",
+       "name": "WARTECH TV-110 플레이트 캐리어 (Coyote)"
+      },
+      {
+       "tpl": "5ab8dab586f77441cd04f2a2",
+       "name": "WARTECH MK3 TV-104 체스트 리그 (MultiCam)"
+      },
+      {
+       "tpl": "59e7643b86f7742cbf2c109a",
+       "name": "WARTECH TV-109 + TV-106 체스트 리그 (A-TACS FG)"
+      }
+     ],
+     "need": 50,
+     "have": 3,
+     "fir": true,
+     "missing": 47,
+     "sources": [
+      {
+       "questId": "66151401efb0539ae10875ae",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "place": "unknown",
+     "items": [
+      {
+       "tpl": "57347c1124597737fb1379e3",
+       "name": "Duct tape 덕트 테이프 "
+      }
+     ],
+     "need": 3,
+     "have": 0,
+     "fir": true,
+     "missing": 3,
+     "sources": [
+      {
+       "questId": "668aacd1dee3de3ce276fdef",
+       "count": 3
+      }
+     ]
+    }
+   ],
+   "gear": [],
+   "special": [],
+   "exits": [
+    {
+     "key": "labir_exit",
+     "name": "The Way Up",
+     "kind": "pmc",
+     "position": {
+      "x": -7.31,
+      "y": -0.01,
+      "z": 40.13
+     },
+     "requirement": null,
+     "requirementKind": null,
+     "chance": null,
+     "target": null
+    },
+    {
+     "key": "labyrinth_secret_tagilla_key",
+     "name": "Ariadne's Path",
+     "kind": "shared",
+     "position": {
+      "x": 19.44,
+      "y": 1.07,
+      "z": 0.5
+     },
+     "requirement": null,
+     "requirementKind": "secret",
+     "chance": null,
+     "target": null
+    }
+   ],
+   "lockedDoors": [
+    {
+     "keyTpl": "679baa2c61f588ae2b062a24",
+     "keyName": "Key 01",
+     "kind": "door",
+     "position": {
+      "x": -31.01,
+      "y": 1.76,
+      "z": 58.91
+     },
+     "code": null
+    },
+    {
+     "keyTpl": "679baa4f59b8961f370dd683",
+     "keyName": "Key 02",
+     "kind": "door",
+     "position": {
+      "x": -2.48,
+      "y": 2.29,
+      "z": -34.2
+     },
+     "code": null
+    }
+   ]
+  }
+ ],
+ "anywhere": {
+  "quests": [
+   {
+    "questId": "60e71d23c1bfa3050473b8e6",
+    "traderId": "5a7c2eca46aef81a7ca2145d",
+    "name": "영점 조정",
+    "marker": null,
+    "summary": "100미터 이상의 거리에서 PMC를 사살하기 ×20",
+    "current": 5,
+    "target": 20,
+    "objectives": [
+     {
+      "conditionId": "60e740b8b567ff641b129573",
+      "text": "100미터 이상의 거리에서 PMC를 사살하기 ×20",
+      "current": 5,
+      "target": 20,
+      "inferredMap": false,
+      "locations": []
+     }
+    ]
+   },
+   {
+    "questId": "67b45467814ab0ffa000c7e7",
+    "traderId": "54cb50c76803fa8b248b4571",
+    "name": "The Art of Explosion",
+    "marker": null,
+    "summary": "Eliminate any target while using grenades or grenade launchers ×35",
+    "current": 8,
+    "target": 35,
+    "objectives": [
+     {
+      "conditionId": "67b45467814ab0ffa000c7ea",
+      "text": "Eliminate any target while using grenades or grenade launchers ×35",
+      "current": 8,
+      "target": 35,
+      "inferredMap": false,
+      "locations": []
+     }
+    ]
+   },
+   {
+    "questId": "66151401efb0539ae10875ae",
+    "traderId": "5ac3b934156ae10c4430e83c",
+    "name": "Drip-Out - Part 1",
+    "marker": null,
+    "summary": "Eliminate Raiders ×100",
+    "current": 3,
+    "target": 100,
+    "objectives": [
+     {
+      "conditionId": "66151401efb0539ae10875af",
+      "text": "Eliminate Raiders ×100",
+      "current": 3,
+      "target": 100,
+      "inferredMap": false,
+      "locations": []
+     }
+    ]
+   },
+   {
+    "questId": "5c0bc91486f7746ab41857a2",
+    "traderId": "58330581ace78e27b8b10cee",
+    "name": "소음기 사용법",
+    "marker": null,
+    "summary": "목표 2개",
+    "current": 0,
+    "target": 30,
+    "objectives": [
+     {
+      "conditionId": "5c0bc95086f7746e784f39ec",
+      "text": "소음기가 장착된 12게이지 산탄총을 사용하여 스캐브 사살하기 ×20",
+      "current": 0,
+      "target": 20,
+      "inferredMap": false,
+      "locations": []
+     },
+     {
+      "conditionId": "5c0bcc9c86f7746fe16dbba9",
+      "text": "소음기가 장착된 12게이지 산탄총을 사용하여 PMC 사살하기 ×10",
+      "current": 0,
+      "target": 10,
+      "inferredMap": false,
+      "locations": []
+     }
+    ]
+   },
+   {
+    "questId": "666314bafd5ca9577902e03a",
+    "traderId": "54cb50c76803fa8b248b4571",
+    "name": "좋았던 시절 - 파트 2",
+    "marker": null,
+    "summary": "TT-33 권총으로 아무 적이나 사살하기 ×10",
+    "current": 0,
+    "target": 10,
+    "objectives": [
+     {
+      "conditionId": "6663389aa257916ad3c89529",
+      "text": "TT-33 권총으로 아무 적이나 사살하기 ×10",
+      "current": 0,
+      "target": 10,
+      "inferredMap": false,
+      "locations": []
+     }
+    ]
+   },
+   {
+    "questId": "68342446a8d674b5740b31fc",
+    "traderId": "6617beeaa9cfa777ca915b7c",
+    "name": "Against the Conscience - Part 2 [PVE ZONE]",
+    "marker": null,
+    "summary": "Eliminate any 10 targets with Shotguns ×10",
+    "current": 0,
+    "target": 10,
+    "objectives": [
+     {
+      "conditionId": "668caeedbdb70c05d702f20c",
+      "text": "Eliminate any 10 targets with Shotguns ×10",
+      "current": 0,
+      "target": 10,
+      "inferredMap": false,
+      "locations": []
+     }
+    ]
+   },
+   {
+    "questId": "67a096577e86e067eb045733",
+    "traderId": "5a7c2eca46aef81a7ca2145d",
+    "name": "Hidden Layer",
+    "marker": null,
+    "summary": "목표 2개",
+    "current": 0,
+    "target": 2,
+    "objectives": [
+     {
+      "conditionId": "67a0bf7103442ae640dba835",
+      "text": "Locate a good lead related to Knossos LLC ×1",
+      "current": 0,
+      "target": 1,
+      "inferredMap": false,
+      "locations": [
+       {
+        "map": "shoreline",
+        "points": [
+         {
+          "x": -196.5,
+          "y": -6,
+          "z": -81
+         }
+        ],
+        "areas": []
+       }
+      ]
+     },
+     {
+      "conditionId": "67dbdd4d6a2e4b8e002b647d",
+      "text": "Find a way inside the Knossos LLC facility ×1",
+      "current": 0,
+      "target": 1,
+      "inferredMap": false,
+      "locations": [
+       {
+        "map": "shoreline",
+        "points": [
+         {
+          "x": -196,
+          "y": -6.5,
+          "z": -77
+         }
+        ],
+        "areas": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "questId": "684009026ceedc792c09b2a7",
+    "traderId": "5a7c2eca46aef81a7ca2145d",
+    "name": "Hobby Club",
+    "marker": null,
+    "summary": "Locate the checkpoint with seized cargo ×1",
+    "current": 0,
+    "target": 1,
+    "objectives": [
+     {
+      "conditionId": "6840714469caa738cc1225c3",
+      "text": "Locate the checkpoint with seized cargo ×1",
+      "current": 0,
+      "target": 1,
+      "inferredMap": false,
+      "locations": [
+       {
+        "map": "bigmap",
+        "points": [
+         {
+          "x": 584.28,
+          "y": 0.94,
+          "z": 5.02
+         }
+        ],
+        "areas": []
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "bring": [],
+  "gear": [
+   {
+    "questId": "5c0bc91486f7746ab41857a2",
+    "rows": [
+     {
+      "label": "weapon",
+      "names": [
+       "Saiga-12K ver.10 12게이지 반자동 산탄총 ",
+       "MP-133 12게이지 펌프액션 산탄총 ",
+       "Remington Model 870 12게이지 펌프액션 산탄총 ",
+       "Mossberg 590A1 12게이지 펌프액션 산탄총 ",
+       "MP-153 12게이지 반자동 산탄총 ",
+       "MP-43-1C 12게이지 더블 배럴 산탄총 ",
+       "MP-155 12게이지 반자동 산탄총 ",
+       "Benelli M3 Super 90 12ga dual-mode shotgun",
+       "MPS Auto Assault-12 Gen 2 12ga automatic shotgun",
+       "MPS Auto Assault-12 Gen 1 12ga automatic shotgun",
+       "Saiga-12K 12ga automatic shotgun",
+       "Browning Auto-5 12ga shotgun",
+       "Browning Auto-5 12ga shotgun (Custom)",
+       "Serbu Super Shorty 12ga shotgun",
+       "Saiga-12K 12ga automatic shotgun (Redline)"
+      ],
+      "tpls": [
+       [
+        "576165642459773c7a400233"
+       ],
+       [
+        "54491c4f4bdc2db1078b4568"
+       ],
+       [
+        "5a7828548dc32e5a9c28b516"
+       ],
+       [
+        "5e870397991fd70db46995c8"
+       ],
+       [
+        "56dee2bdd2720bc8328b4567"
+       ],
+       [
+        "5580223e4bdc2d1c128b457f"
+       ],
+       [
+        "606dae0ab0e443224b421bb7"
+       ],
+       [
+        "6259b864ebedf17603599e88"
+       ],
+       [
+        "67124dcfa3541f2a1f0e788b"
+       ],
+       [
+        "66ffa9b66e19cc902401c5e8"
+       ],
+       [
+        "674fe9a75e51f1c47c04ec23"
+       ],
+       [
+        "669fca7f9ed4916116c76d5e"
+       ],
+       [
+        "6840ebf5b8687ba34f8dfbca"
+       ],
+       [
+        "6761b213607f9a6f79017d23"
+       ],
+       [
+        "6981d72ed009ad83920da43a"
+       ]
+      ]
+     },
+     {
+      "label": "weaponMod",
+      "names": [
+       "SilencerCo Salvo 12 12게이지 소음기 ",
+       "Hexagon 12K 12게이지 소음기 "
+      ],
+      "tpls": [
+       [
+        "5b363dd25acfc4001a598fd2"
+       ],
+       [
+        "59c0ec5b86f77435b128bfca"
+       ]
+      ]
+     },
+     {
+      "label": "weapon",
+      "names": [
+       "Saiga-12K ver.10 12게이지 반자동 산탄총 ",
+       "MP-133 12게이지 펌프액션 산탄총 ",
+       "Remington Model 870 12게이지 펌프액션 산탄총 ",
+       "Mossberg 590A1 12게이지 펌프액션 산탄총 ",
+       "MP-153 12게이지 반자동 산탄총 ",
+       "MP-43-1C 12게이지 더블 배럴 산탄총 ",
+       "MP-155 12게이지 반자동 산탄총 ",
+       "Benelli M3 Super 90 12ga dual-mode shotgun",
+       "Saiga-12K 12ga automatic shotgun",
+       "MPS Auto Assault-12 Gen 2 12ga automatic shotgun",
+       "MPS Auto Assault-12 Gen 1 12ga automatic shotgun",
+       "Browning Auto-5 12ga shotgun",
+       "Browning Auto-5 12ga shotgun (Custom)",
+       "Serbu Super Shorty 12ga shotgun",
+       "Saiga-12K 12ga automatic shotgun (Redline)"
+      ],
+      "tpls": [
+       [
+        "576165642459773c7a400233"
+       ],
+       [
+        "54491c4f4bdc2db1078b4568"
+       ],
+       [
+        "5a7828548dc32e5a9c28b516"
+       ],
+       [
+        "5e870397991fd70db46995c8"
+       ],
+       [
+        "56dee2bdd2720bc8328b4567"
+       ],
+       [
+        "5580223e4bdc2d1c128b457f"
+       ],
+       [
+        "606dae0ab0e443224b421bb7"
+       ],
+       [
+        "6259b864ebedf17603599e88"
+       ],
+       [
+        "674fe9a75e51f1c47c04ec23"
+       ],
+       [
+        "67124dcfa3541f2a1f0e788b"
+       ],
+       [
+        "66ffa9b66e19cc902401c5e8"
+       ],
+       [
+        "669fca7f9ed4916116c76d5e"
+       ],
+       [
+        "6840ebf5b8687ba34f8dfbca"
+       ],
+       [
+        "6761b213607f9a6f79017d23"
+       ],
+       [
+        "6981d72ed009ad83920da43a"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "questId": "666314bafd5ca9577902e03a",
+    "rows": [
+     {
+      "label": "weapon",
+      "names": [
+       "TT-33 7.62x25 TT 권총 (황금색)"
+      ],
+      "tpls": [
+       [
+        "5b3b713c5acfc4330140bd8d"
+       ]
+      ]
+     }
+    ]
+   }
+  ],
+  "special": []
+ }
+}

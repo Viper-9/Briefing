@@ -1,0 +1,269 @@
+{
+ "schemaVersion": 1,
+ "questCodexVersion": "test",
+ "generatedAt": "1970-01-01T00:00:00+00:00",
+ "lang": "kr",
+ "traders": {
+  "54cb50c76803fa8b248b4571": {
+   "name": "프라퍼"
+  },
+  "54cb57776803fa99248b456e": {
+   "name": "테라피스트"
+  },
+  "579dc571d53a0658a154fbec": {
+   "name": "펜스"
+  },
+  "58330581ace78e27b8b10cee": {
+   "name": "스키어"
+  },
+  "5935c25fb3acc3127c3d8cd9": {
+   "name": "피스키퍼"
+  },
+  "5a7c2eca46aef81a7ca2145d": {
+   "name": "메카닉"
+  },
+  "5ac3b934156ae10c4430e83c": {
+   "name": "래그맨"
+  },
+  "5c0647fdd443bc2504c2d371": {
+   "name": "예거"
+  },
+  "638f541a29ffd1183d187f57": {
+   "name": "등대지기"
+  },
+  "656f0f98d80a697f855d34b1": {
+   "name": "BTR 운전병"
+  },
+  "6617beeaa9cfa777ca915b7c": {
+   "name": "레프"
+  },
+  "668aaff35fd574b6dcc4a686": {
+   "name": "Painter"
+  },
+  "66bf757f27d0b097db0acea5": {
+   "name": "Artem"
+  },
+  "6747208ef022cbbfc65c41bf": {
+   "name": "Lotus"
+  },
+  "6864e812f9fe664cb8b8e152": {
+   "name": "Storyteller"
+  }
+ },
+ "maps": [
+  {
+   "key": "bigmap",
+   "locationIds": [
+    "bigmap"
+   ],
+   "name": "세관",
+   "count": 0,
+   "hasMap": true,
+   "mapFolder": "bigmap",
+   "quests": [],
+   "bring": [],
+   "find": [],
+   "gear": [],
+   "special": [],
+   "exits": [
+    {
+     "key": "EXFIL_ZB013",
+     "name": "ZB-013",
+     "kind": "pmc",
+     "position": {
+      "x": 200.98,
+      "y": -1.15,
+      "z": -153.09
+     },
+     "requirement": null,
+     "requirementKind": "switch",
+     "chance": null,
+     "target": null
+    },
+    {
+     "key": "Dorms V-Ex",
+     "name": "Dorms V-Ex",
+     "kind": "pmc",
+     "position": {
+      "x": 181.08,
+      "y": -0.71,
+      "z": 213.25
+     },
+     "requirement": "5,000 루블 필요",
+     "requirementKind": null,
+     "chance": 50,
+     "target": null
+    }
+   ],
+   "lockedDoors": [
+    {
+     "keyTpl": "5448ba0b4bdc2d02308b456c",
+     "keyName": "Factory emergency exit key",
+     "kind": "door",
+     "position": {
+      "x": 198.93,
+      "y": -1.78,
+      "z": -146.17
+     },
+     "code": null
+    },
+    {
+     "keyTpl": "5448ba0b4bdc2d02308b456c",
+     "keyName": "Factory emergency exit key",
+     "kind": "door",
+     "position": {
+      "x": 356.05,
+      "y": 2.34,
+      "z": -14.57
+     },
+     "code": null
+    }
+   ]
+  },
+  {
+   "key": "factory4_day",
+   "locationIds": [
+    "factory4_day",
+    "factory4_night"
+   ],
+   "name": "공장",
+   "count": 0,
+   "hasMap": true,
+   "mapFolder": "factory4_day",
+   "quests": [],
+   "bring": [],
+   "find": [],
+   "gear": [],
+   "special": [],
+   "exits": [
+    {
+     "key": "Cellars",
+     "name": "Cellars",
+     "kind": "pmc",
+     "position": {
+      "x": 73.89,
+      "y": -3.29,
+      "z": -29.08
+     },
+     "requirement": null,
+     "requirementKind": null,
+     "chance": null,
+     "target": null
+    },
+    {
+     "key": "Gate 3",
+     "name": "Gate 3",
+     "kind": "shared",
+     "position": {
+      "x": 58.71,
+      "y": 1.59,
+      "z": 60.87
+     },
+     "requirement": null,
+     "requirementKind": null,
+     "chance": null,
+     "target": null
+    }
+   ],
+   "lockedDoors": [
+    {
+     "keyTpl": "5448ba0b4bdc2d02308b456c",
+     "keyName": "Factory emergency exit key",
+     "kind": "door",
+     "position": {
+      "x": -19.08,
+      "y": 1.45,
+      "z": -48.57
+     },
+     "code": null
+    },
+    {
+     "keyTpl": "5448ba0b4bdc2d02308b456c",
+     "keyName": "Factory emergency exit key",
+     "kind": "door",
+     "position": {
+      "x": 29.12,
+      "y": 9.08,
+      "z": 36.52
+     },
+     "code": null
+    }
+   ]
+  },
+  {
+   "key": "labyrinth",
+   "locationIds": [
+    "labyrinth"
+   ],
+   "name": "The Labyrinth",
+   "count": 0,
+   "hasMap": true,
+   "mapFolder": "labyrinth",
+   "quests": [],
+   "bring": [],
+   "find": [],
+   "gear": [],
+   "special": [],
+   "exits": [
+    {
+     "key": "labir_exit",
+     "name": "The Way Up",
+     "kind": "pmc",
+     "position": {
+      "x": -7.31,
+      "y": -0.01,
+      "z": 40.13
+     },
+     "requirement": null,
+     "requirementKind": null,
+     "chance": null,
+     "target": null
+    },
+    {
+     "key": "labyrinth_secret_tagilla_key",
+     "name": "Ariadne's Path",
+     "kind": "shared",
+     "position": {
+      "x": 19.44,
+      "y": 1.07,
+      "z": 0.5
+     },
+     "requirement": null,
+     "requirementKind": "secret",
+     "chance": null,
+     "target": null
+    }
+   ],
+   "lockedDoors": [
+    {
+     "keyTpl": "679baa2c61f588ae2b062a24",
+     "keyName": "Key 01",
+     "kind": "door",
+     "position": {
+      "x": -31.01,
+      "y": 1.76,
+      "z": 58.91
+     },
+     "code": null
+    },
+    {
+     "keyTpl": "679baa4f59b8961f370dd683",
+     "keyName": "Key 02",
+     "kind": "door",
+     "position": {
+      "x": -2.48,
+      "y": 2.29,
+      "z": -34.2
+     },
+     "code": null
+    }
+   ]
+  }
+ ],
+ "anywhere": {
+  "quests": [],
+  "bring": [],
+  "gear": [],
+  "special": []
+ }
+}
