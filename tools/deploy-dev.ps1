@@ -8,7 +8,8 @@ New-Item -ItemType Directory -Force $dest | Out-Null
 
 dotnet build (Join-Path $root 'client\Briefing.Client\Briefing.Client.csproj') -c Release
 if ($LASTEXITCODE -ne 0) { throw 'build failed' }
-Copy-Item (Join-Path $root 'client\Briefing.Client\bin\Release\netstandard2.1\Briefing.Client.dll') $dest -Force
+$bin = Join-Path $root 'client\Briefing.Client\bin\Release\netstandard2.1'
+foreach ($dll in 'Briefing.Client.dll', 'Briefing.Core.dll') { Copy-Item (Join-Path $bin $dll) $dest -Force }
 
 $bundle = Join-Path $root 'unity\Build\briefing.bundle'
 if (Test-Path $bundle) { Copy-Item $bundle $dest -Force } else { Write-Host 'briefing.bundle 없음 (Task 4 전이면 정상)' }
