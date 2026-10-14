@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Briefing.Core.Screen;
+using Briefing.Game;
+using Briefing.Patches;
 using Briefing.Ui;
 using EFT.UI;
 using HarmonyLib;
@@ -12,10 +15,9 @@ using UnityEngine;
 
 namespace Briefing.Tab;
 
-// InventoryScreen 에 붙어 사는 컴포넌트. 화면이 열릴 때마다 탭을 (없으면) 만들고, 우리 탭 ↔ 게임 탭 선택을 중개한다.
-// 우리 탭은 게임 TabGroup 의 배열 밖이라 그룹이 우리를 모른다:
-//  - 우리 탭 클릭 → TabGroup.TryHide()(현재 게임 탭 Deselect) 성공 시 우리 탭 Select.
-//  - 게임 탭 클릭 → 그룹이 알아서 그 탭을 Select. 우리는 그 탭의 OnSelectionChanged 를 듣고 우리 탭만 Deselect.
+// InventoryScreen 에 붙는 컴포넌트. 화면이 열릴 때마다 탭이 없으면 만들고 게임 탭과의 선택을 이어 준다.
+// 브리핑 탭은 게임 TabGroup 배열 밖이라 그룹이 모른다. 그래서 브리핑 탭을 누르면 TabGroup.TryHide() 로 게임 탭을 내린 뒤 Select 하고,
+// 게임 탭을 누르면 그룹이 그 탭을 고르게 두고 OnSelectionChanged 를 들어 브리핑 탭만 내린다.
 internal sealed class BriefingTabHost : MonoBehaviour
 {
     private const string TabName = "BriefingTab";
@@ -33,6 +35,7 @@ internal sealed class BriefingTabHost : MonoBehaviour
     private IBriefingView _view;
     private readonly List<global::Tab> _nativeTabs = new();
     private bool _busy;
+    private readonly List<TMP_Text> _titleTexts = new(); // 탭 이름이 들어 있는 TMP
 
     internal static void AttachOrRefresh(InventoryScreen screen)
     {
@@ -42,6 +45,9 @@ internal sealed class BriefingTabHost : MonoBehaviour
             if (host == null) host = screen.gameObject.AddComponent<BriefingTabHost>();
             host._screen = screen;
             host.StopAllCoroutines();
+            host.RestoreContent(null); // 앞 코루틴이 가린 채로 멈췄을 수 있다
+            TabReturnPatch.Clear();     // 이번 Show 가 새 그룹을 만들었으니 앞에서 맡아 둔 것은 버린다
+            host.HideContentForReturn();
             host.StartCoroutine(host.AttachWhenReady());
         }
         catch (Exception e)
@@ -52,24 +58,160 @@ internal sealed class BriefingTabHost : MonoBehaviour
 
     private IEnumerator AttachWhenReady()
     {
-        // ShowWithTab 코루틴이 탭 컨트롤러를 Init 할 때까지 기다린다(최대 120프레임).
-        for (var frame = 0; frame < 120; frame++)
+        // "완료하러 가기"로 연 상인 화면에서 돌아왔으면 브리핑 탭을 다시 고른다. 요청은 여기서 꺼내면 지워진다.
+        var returnToBriefing = false;
+        try { returnToBriefing = TraderJump.TakeReturnRequest(); }
+        catch (Exception e) { Log.Warn($"turn in: return request read failed: {e.Message}"); }
+
+        // ShowWithTab 코루틴이 탭 컨트롤러를 Init 할 때까지 최대 120프레임 기다린다.
+        var created = false;
+        for (var frame = 0; frame < 120 && !created; frame++)
         {
             yield return null;
             if (frame < 2) continue;
             if (TabsField.GetValue(_screen) == null || _screen._tabDictionary == null) continue;
             try
             {
-                if (EnsureCreated()) yield break;
+                created = EnsureCreated();
             }
             catch (Exception e)
             {
                 Log.Error($"briefing tab not created: {e}");
                 DiscardPartial();
+                if (returnToBriefing) Log.Warn("turn in: return to briefing tab failed (tab not created)");
+                SettleHold();
+                RestoreContent(null);
                 yield break;
             }
         }
-        Log.Warn("tab group was not ready after 120 frames; briefing tab skipped");
+        if (!created)
+        {
+            Log.Warn("tab group was not ready after 120 frames; briefing tab skipped");
+            if (returnToBriefing) Log.Warn("turn in: return to briefing tab failed (tab not created)");
+            SettleHold();
+            RestoreContent(null);
+            yield break;
+        }
+        if (returnToBriefing) yield return ReturnToBriefing();
+        SettleHold();
+        RestoreContent(null); // 어떻게 끝났든 가린 채로 두지 않는다
+    }
+
+    // 사용자가 누른 것처럼 HandlePointerClick 으로 브리핑 탭을 고른다. 내용 영역은 Show 때 가려 두었으니
+    // 게임이 기억한 탭은 보이지 않는다. 패널이 켜지는 프레임에 가린 것을 되돌린다(최대 2초).
+    private IEnumerator ReturnToBriefing()
+    {
+        yield return null;
+        try
+        {
+            if (TasksPanel.InRaid() || _tab == null || Panel == null)
+            {
+                Log.Warn("turn in: return to briefing tab failed (in raid or no tab)");
+                RestoreContent(null);
+                yield break;
+            }
+            if (!Panel.activeSelf) _tab.HandlePointerClick(false);
+        }
+        catch (Exception e)
+        {
+            Log.Warn($"turn in: return to briefing tab failed: {e.Message}");
+            RestoreContent(null);
+            yield break;
+        }
+        var deadline = Time.realtimeSinceStartup + 2f;
+        while (Time.realtimeSinceStartup < deadline)
+        {
+            if (Panel != null && Panel.activeSelf)
+            {
+                TabReturnPatch.Release();
+                RestoreContent(null);
+                Log.Info("turn in: returned to briefing tab");
+                yield break;
+            }
+            yield return null;
+        }
+        RestoreContent(null);
+        Log.Warn("turn in: return to briefing tab failed (panel not shown)");
+    }
+
+    // ── 상인 화면에서 돌아오는 동안 내용 가리기 ──
+    // 캐릭터 화면 Show 와 같은 프레임에 탭 내용 영역(_tasksScreen 의 부모, 브리핑 패널의 부모이기도 하다)을 CanvasGroup alpha 0 으로 가려
+    // 브리핑 탭이 골라지기 전에 게임 탭이 보이지 않게 한다. 성공, 실패, 화면 닫힘, 2초 시간 초과 어느 경우든 원래 값으로 되돌린다.
+    private const float HideSafetySeconds = 2f;
+    private CanvasGroup _hiddenGroup;
+    private float _prevAlpha;
+    private bool _prevBlocksRaycasts, _prevInteractable;
+    private bool _addedGroup;
+    private float _hiddenAt;
+
+    private void HideContentForReturn()
+    {
+        try
+        {
+            if (!TraderJump.PeekReturnRequest() || TasksPanel.InRaid()) return;
+            // 탭 그룹의 첫 Show 를 맡아 두면 게임 탭이 아예 그려지지 않는다. 아래 CanvasGroup 가리기는 그게 안 될 때를 위한 것이다.
+            if (TabsField.GetValue(_screen) is TabGroup tabs) TabReturnPatch.Arm(tabs);
+            var container = _screen != null && _screen._tasksScreen != null ? _screen._tasksScreen.transform.parent : null;
+            if (container == null) return;
+            var group = container.GetComponent<CanvasGroup>();
+            _addedGroup = group == null; // 직접 붙인 것이면 되돌릴 때 떼어 낸다
+            if (_addedGroup) group = container.gameObject.AddComponent<CanvasGroup>();
+            _prevAlpha = group.alpha;
+            _prevBlocksRaycasts = group.blocksRaycasts;
+            _prevInteractable = group.interactable;
+            group.alpha = 0f;
+            group.blocksRaycasts = false;
+            _hiddenGroup = group;
+            _hiddenAt = Time.realtimeSinceStartup;
+        }
+        catch (Exception e)
+        {
+            Log.Warn($"turn in: content hide failed: {e.Message}");
+            RestoreContent(null);
+        }
+    }
+
+    // reason 이 있으면 로그를 남긴다.
+    private void RestoreContent(string reason)
+    {
+        var group = _hiddenGroup;
+        _hiddenGroup = null;
+        var added = _addedGroup;
+        _addedGroup = false;
+        if (group == null) return; // 가린 적이 없거나 이미 파괴됐다
+        try
+        {
+            if (added)
+            {
+                Destroy(group);
+            }
+            else
+            {
+                group.alpha = _prevAlpha;
+                group.blocksRaycasts = _prevBlocksRaycasts;
+                group.interactable = _prevInteractable;
+            }
+            if (reason != null) Log.Warn(reason);
+        }
+        catch (Exception e) { Log.Warn($"turn in: content restore failed: {e.Message}"); }
+    }
+
+    // 코루틴이 어떻게 되든 가린 지 2초가 지나면 되돌린다.
+    private void Update()
+    {
+        if (_hiddenGroup != null && Time.realtimeSinceStartup - _hiddenAt > HideSafetySeconds)
+        {
+            SettleHold();
+            RestoreContent("turn in: content unhidden by timeout");
+        }
+    }
+
+    // 맡아 둔 게임 탭 Show 가 있으면, 브리핑 탭이 열려 있을 때는 버리고 아니면 그대로 불러 빈 화면으로 남지 않게 한다.
+    private void SettleHold()
+    {
+        if (!TabReturnPatch.Holding) { TabReturnPatch.Clear(); return; }
+        if (Panel != null && Panel.activeSelf) TabReturnPatch.Release();
+        else TabReturnPatch.Replay();
     }
 
     private bool EnsureCreated()
@@ -77,7 +219,7 @@ internal sealed class BriefingTabHost : MonoBehaviour
         if (!_screen._tabDictionary.TryGetValue(EInventoryTab.Notes, out var notes) || notes == null) return false;
         var row = notes.transform.parent;
 
-        // 줄 배치를 먼저 확인한다: 준비 안 되면 우리 탭이 임무 탭과 겹치므로 탭을 만들지 않는다.
+        // 줄 배치가 준비되지 않으면 브리핑 탭이 임무 탭과 겹치므로 탭을 만들지 않는다.
         var layout = row.GetComponent<TabRowLayout>();
         if (layout == null) layout = row.gameObject.AddComponent<TabRowLayout>();
         if (!layout.Configure(_screen._tabDictionary.Values))
@@ -85,20 +227,21 @@ internal sealed class BriefingTabHost : MonoBehaviour
 
         if (_tab == null)
         {
-            // 비활성 임시 부모 밑에서 복제해 복제본의 Awake/OnEnable 이 정리 전에 돌지 않게 한다.
+            // 꺼진 임시 부모 밑에 복제해서 정리하기 전에 복제본의 Awake/OnEnable 이 돌지 않게 한다.
             var holder = new GameObject("BriefingTabHolder");
             holder.SetActive(false);
             try
             {
                 var go = Instantiate(notes.gameObject, holder.transform, false);
-                go.SetActive(false); // 끝까지 성공할 때만 켠다(중간 실패 시 겹친 빈 탭이 남지 않게)
+                go.SetActive(false); // 중간에 실패해도 빈 탭이 겹쳐 남지 않게 끝에서 켠다
                 go.name = TabName;
                 _tab = go.GetComponent<global::Tab>();
-                SelectionEventField?.SetValue(_tab, null); // 복제본에 이벤트 구독이 딸려 오지 않게
+                SelectionEventField?.SetValue(_tab, null); // 원본의 이벤트 구독이 딸려 오지 않게
                 foreach (var lt in go.GetComponentsInChildren<LocalizedText>(true)) DestroyImmediate(lt);
                 _tab.LocalizedText = null;
+                _titleTexts.Clear();
                 foreach (var t in go.GetComponentsInChildren<TMP_Text>(true))
-                    if (!string.IsNullOrWhiteSpace(t.text)) t.text = "브리핑"; // 0단계: 고정 문구. i18n 은 5단계
+                    if (!string.IsNullOrWhiteSpace(t.text)) _titleTexts.Add(t); // 글자는 ApplyTabTitle 이 정한다
                 _tab.OnSelectionChanged += OnOurSelectionChanged;
                 go.transform.SetParent(row, false);
             }
@@ -111,7 +254,9 @@ internal sealed class BriefingTabHost : MonoBehaviour
             Log.Info($"briefing tab created (inRaid={InRaid()})");
         }
 
-        // 임무 탭 바로 오른쪽: x 를 임무 탭 + 0.1 로 두면 TabRowLayout 정렬에서 임무 탭 다음 자리가 된다.
+        ApplyTabTitle(); // 게임 언어가 바뀌었을 수 있다
+
+        // x 를 임무 탭보다 0.1 크게 두면 TabRowLayout 이 정렬할 때 임무 탭 바로 다음에 온다.
         var notesRt = (RectTransform)notes.transform;
         var ourRt = (RectTransform)_tab.transform;
         ourRt.anchoredPosition = new Vector2(notesRt.anchoredPosition.x + 0.1f, notesRt.anchoredPosition.y);
@@ -120,31 +265,36 @@ internal sealed class BriefingTabHost : MonoBehaviour
         _tab.SetInteractable(true);
         _tab.UpdateVisual(false);
         _tab.gameObject.SetActive(true);
-        Panel.SetActive(false);
+        HideNow();
         SubscribeNativeTabs();
         return true;
     }
 
-    // ScreenController 는 BaseScreen<,,> 의 protected 필드라(프로퍼티 아님) 상속 사슬을 따라 올라가며 읽는다. 로그용이라 실패하면 null.
+    // 실패하면 이름만 전의 값으로 남는다.
+    private void ApplyTabTitle()
+    {
+        UiKit.Guard("tab title", () =>
+        {
+            BundleBriefingView.UseGameLanguage();
+            var title = Texts.TabTitle;
+            foreach (var t in _titleTexts) if (t != null) t.text = title;
+        });
+    }
+
+    // 로그용이라 실패하면 null.
     private bool? InRaid()
     {
         try
         {
-            for (var type = _screen.GetType(); type != null; type = type.BaseType)
-            {
-                var field = AccessTools.Field(type, "ScreenController");
-                if (field == null || field.DeclaringType != type) continue;
-                var controller = field.GetValue(_screen);
-                if (controller == null) return null;
-                var inRaid = AccessTools.Property(controller.GetType(), "InRaid");
-                return inRaid?.GetValue(controller) as bool?;
-            }
-            return null;
+            var controller = GameRefs.ScreenControllerOf(_screen);
+            if (controller == null) return null;
+            var inRaid = AccessTools.Property(controller.GetType(), "InRaid");
+            return inRaid?.GetValue(controller) as bool?;
         }
         catch { return null; }
     }
 
-    // EnsureCreated 가 중간에 실패했을 때: 반쯤 만든 탭·패널을 지워 다음 Show 에서 깨끗이 다시 시작한다.
+    // EnsureCreated 가 중간에 실패하면 반쯤 만든 것을 지우고 다음 Show 에서 다시 만든다.
     private void DiscardPartial()
     {
         try
@@ -167,7 +317,7 @@ internal sealed class BriefingTabHost : MonoBehaviour
         // 임무 화면(_tasksScreen)과 같은 부모·같은 영역에 둔다.
         var tasks = (RectTransform)_screen._tasksScreen.transform;
         var panel = new GameObject(PanelName, typeof(RectTransform), typeof(CanvasGroup));
-        Panel = panel; // Build 가 실패해도 DiscardPartial 이 치울 수 있게 먼저 보관
+        Panel = panel; // Build 가 실패해도 DiscardPartial 이 치울 수 있게 먼저 둔다
         panel.transform.SetParent(tasks.parent, false);
         var rt = (RectTransform)panel.transform;
         ApplyLayout(rt, tasks);
@@ -177,7 +327,7 @@ internal sealed class BriefingTabHost : MonoBehaviour
         panel.SetActive(false);
     }
 
-    // 패널 영역: 부모 가로 전체(좌우 여백) + 탭 줄 바로 아래부터 하단 여백 위까지. 탭이 열릴 때마다 다시 계산한다(설정 변경 반영).
+    // 가로는 부모 전체에서 좌우 여백을 빼고, 세로는 탭 줄 아래부터 하단 여백까지. 설정이 바뀌었을 수 있어 열 때마다 다시 잰다.
     internal void ApplyLayout()
     {
         try
@@ -288,10 +438,12 @@ internal sealed class BriefingTabHost : MonoBehaviour
         if (_tab != null) _tab.UpdateVisual(false);
     }
 
-    // 캐릭터 화면이 닫히면(비활성) 우리 패널도 닫고 구독을 푼다. 다음 Show 에서 다시 붙는다.
+    // 캐릭터 화면이 닫히면 패널도 닫고 구독을 푼다. 다음 Show 에서 다시 붙는다.
     private void OnDisable()
     {
         StopAllCoroutines();
+        TabReturnPatch.Clear(); // 화면이 닫혔으니 맡은 Show 는 부르지 않는다
+        RestoreContent(null);
         HideNow();
         foreach (var t in _nativeTabs) if (t != null) t.OnSelectionChanged -= OnNativeSelectionChanged;
         _nativeTabs.Clear();
@@ -299,6 +451,7 @@ internal sealed class BriefingTabHost : MonoBehaviour
 
     private void OnDestroy()
     {
+        RestoreContent(null);
         if (_tab != null) _tab.OnSelectionChanged -= OnOurSelectionChanged;
     }
 }
