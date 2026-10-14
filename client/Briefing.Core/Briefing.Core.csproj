@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Briefing.Core</AssemblyName>
+    <RootNamespace>Briefing.Core</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 게임에 든 Newtonsoft.Json 과 어셈블리 버전(13.0.0.0)이 같다. 런타임에는 게임 것을 쓰고
+         Client 는 게임 DLL 을 직접 참조하므로 PrivateAssets=all 로 넘기지 않는다. -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" PrivateAssets="all" />
+  </ItemGroup>
+</Project>
