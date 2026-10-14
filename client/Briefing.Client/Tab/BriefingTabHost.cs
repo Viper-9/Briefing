@@ -10,20 +10,19 @@ using Briefing.Patches;
 using Briefing.Ui;
 using EFT.UI;
 using HarmonyLib;
-using TMPro;
 using UnityEngine;
 
 namespace Briefing.Tab;
 
 // InventoryScreen 에 붙는 컴포넌트. 화면이 열릴 때마다 탭이 없으면 만들고 게임 탭과의 선택을 이어 준다.
-// 브리핑 탭은 게임 TabGroup 배열 밖이라 그룹이 모른다. 그래서 브리핑 탭을 누르면 TabGroup.TryHide() 로 게임 탭을 내린 뒤 Select 하고,
+// 브리핑은 탭 줄에 따로 보이지 않고 임무 탭 드롭다운(TabDropdown)에서 고른다. 선택에 쓰는 브리핑 탭은 숨겨 두고 그대로 쓴다.
+// 브리핑 탭은 게임 TabGroup 배열 밖이라 그룹이 모른다. 그래서 브리핑을 고르면 TabGroup.TryHide() 로 게임 탭을 내린 뒤 Select 하고,
 // 게임 탭을 누르면 그룹이 그 탭을 고르게 두고 OnSelectionChanged 를 들어 브리핑 탭만 내린다.
 internal sealed class BriefingTabHost : MonoBehaviour
 {
     private const string TabName = "BriefingTab";
     private const string PanelName = "BriefingPanel";
     private static readonly FieldInfo TabsField = AccessTools.Field(typeof(InventoryScreen), "_tabs");
-    private static readonly FieldInfo SelectionEventField = AccessTools.Field(typeof(global::Tab), "_onSelectionChanged");
 
     // Plugin.Awake 가 정한다. 탭을 만들 때마다 새 뷰 하나를 받는다.
     internal static Func<IBriefingView> ViewFactory = () => new BundleBriefingView();
@@ -35,7 +34,7 @@ internal sealed class BriefingTabHost : MonoBehaviour
     private IBriefingView _view;
     private readonly List<global::Tab> _nativeTabs = new();
     private bool _busy;
-    private readonly List<TMP_Text> _titleTexts = new(); // 탭 이름이 들어 있는 TMP
+    private TabDropdown _dropdown;
 
     internal static void AttachOrRefresh(InventoryScreen screen)
     {
@@ -217,68 +216,48 @@ internal sealed class BriefingTabHost : MonoBehaviour
     private bool EnsureCreated()
     {
         if (!_screen._tabDictionary.TryGetValue(EInventoryTab.Notes, out var notes) || notes == null) return false;
-        var row = notes.transform.parent;
-
-        // 줄 배치가 준비되지 않으면 브리핑 탭이 임무 탭과 겹치므로 탭을 만들지 않는다.
-        var layout = row.GetComponent<TabRowLayout>();
-        if (layout == null) layout = row.gameObject.AddComponent<TabRowLayout>();
-        if (!layout.Configure(_screen._tabDictionary.Values))
-            throw new InvalidOperationException("tab row layout not ready (cannot place the tab without overlapping)");
 
         if (_tab == null)
         {
-            // 꺼진 임시 부모 밑에 복제해서 정리하기 전에 복제본의 Awake/OnEnable 이 돌지 않게 한다.
-            var holder = new GameObject("BriefingTabHolder");
-            holder.SetActive(false);
-            try
-            {
-                var go = Instantiate(notes.gameObject, holder.transform, false);
-                go.SetActive(false); // 중간에 실패해도 빈 탭이 겹쳐 남지 않게 끝에서 켠다
-                go.name = TabName;
-                _tab = go.GetComponent<global::Tab>();
-                SelectionEventField?.SetValue(_tab, null); // 원본의 이벤트 구독이 딸려 오지 않게
-                foreach (var lt in go.GetComponentsInChildren<LocalizedText>(true)) DestroyImmediate(lt);
-                _tab.LocalizedText = null;
-                _titleTexts.Clear();
-                foreach (var t in go.GetComponentsInChildren<TMP_Text>(true))
-                    if (!string.IsNullOrWhiteSpace(t.text)) _titleTexts.Add(t); // 글자는 ApplyTabTitle 이 정한다
-                _tab.OnSelectionChanged += OnOurSelectionChanged;
-                go.transform.SetParent(row, false);
-            }
-            finally
-            {
-                Destroy(holder);
-            }
-
+            _dropdown = TabDropdown.Create(notes, () => Panel != null && Panel.activeSelf, TasksShown, PickTasks, PickBriefing);
+            // 탭 줄에 놓지 않고 메뉴 밑에 꺼 둔다. 탭 줄을 배치하는 다른 모드가 세지 않는다.
+            _tab = TabClone.Make(notes, _dropdown.Root, TabName, null);
+            _tab.OnSelectionChanged += OnOurSelectionChanged;
             CreatePanel();
             Log.Info($"briefing tab created (inRaid={InRaid()})");
         }
 
-        ApplyTabTitle(); // 게임 언어가 바뀌었을 수 있다
-
-        // x 를 임무 탭보다 0.1 크게 두면 TabRowLayout 이 정렬할 때 임무 탭 바로 다음에 온다.
-        var notesRt = (RectTransform)notes.transform;
-        var ourRt = (RectTransform)_tab.transform;
-        ourRt.anchoredPosition = new Vector2(notesRt.anchoredPosition.x + 0.1f, notesRt.anchoredPosition.y);
-
         _tab.Init(new BriefingTabController(Panel, _view, ApplyLayout));
         _tab.SetInteractable(true);
         _tab.UpdateVisual(false);
-        _tab.gameObject.SetActive(true);
         HideNow();
+        RefreshDropdown(); // 게임 언어가 바뀌었을 수 있다
         SubscribeNativeTabs();
         return true;
     }
 
-    // 실패하면 이름만 전의 값으로 남는다.
-    private void ApplyTabTitle()
+    // 실패하면 글자만 전의 값으로 남는다.
+    private void RefreshDropdown()
     {
-        UiKit.Guard("tab title", () =>
+        UiKit.Guard("tab menu refresh", () =>
         {
             BundleBriefingView.UseGameLanguage();
-            var title = Texts.TabTitle;
-            foreach (var t in _titleTexts) if (t != null) t.text = title;
+            _dropdown.Refresh();
         });
+    }
+
+    private bool TasksShown() => _screen != null && _screen._tasksScreen != null && _screen._tasksScreen.gameObject.activeSelf;
+
+    // 임무 화면이 이미 열려 있으면 그대로 둔다. 아니면 사용자가 임무 탭을 누른 것처럼 게임 그룹에 맡긴다.
+    private void PickTasks()
+    {
+        if (Panel != null && !Panel.activeSelf && TasksShown()) return;
+        if (_screen._tabDictionary.TryGetValue(EInventoryTab.Notes, out var notes) && notes != null) notes.HandlePointerClick(false);
+    }
+
+    private void PickBriefing()
+    {
+        if (_tab != null && Panel != null && !Panel.activeSelf) _tab.HandlePointerClick(false);
     }
 
     // 로그용이라 실패하면 null.
@@ -304,10 +283,12 @@ internal sealed class BriefingTabHost : MonoBehaviour
                 _tab.OnSelectionChanged -= OnOurSelectionChanged;
                 Destroy(_tab.gameObject);
             }
+            if (_dropdown != null) Destroy(_dropdown.gameObject);
             if (Panel != null) Destroy(Panel);
         }
         catch (Exception e) { Log.Warn($"discard partial briefing tab failed: {e.Message}"); }
         _tab = null;
+        _dropdown = null;
         Panel = null;
         _view = null;
     }
@@ -417,6 +398,7 @@ internal sealed class BriefingTabHost : MonoBehaviour
 
     private void OnNativeSelectionChanged(global::Tab tab, bool shouldSelect)
     {
+        if (shouldSelect && _dropdown != null) _dropdown.Close();
         if (!shouldSelect || Panel == null || !Panel.activeSelf) return;
         _ = DeselectOursAsync();
     }
