@@ -1,158 +1,168 @@
 # Briefing
 
-**Language: [한국어](README.md) | [English](README.en.md)**
+**Language: [English](README.md) | [한국어](README.kr.md)**
 
-![브리핑 화면](media/overview.png)
+![Briefing screen](media/overview.png)
 
-## 모드 취지
+## Purpose
 
-레이드에 나가기 전에 확인할 것들  **이 맵에서 할 퀘스트, 목표 위치, 챙길 아이템, 퀘스트가 요구하는 장비** 
-를 캐릭터 화면 안의 **브리핑** 탭 한 화면에서 보는 클라이언트 모드입니다.
+A client mod that puts everything you check before a raid (**the quests for this map, where the objectives are, the
+items to bring and the gear quests ask for**) on a single **Briefing** screen inside the character screen.
 
-데이터는 [QuestCodex](https://github.com/Viper-9/QuestCodex) 서버 모드에서 받습니다. 그래서 QuestCodex 웹의
-레이드 준비 화면과 같은 계산 결과를, 브라우저를 따로 띄우지 않고 게임 안에서 보게 됩니다. 퀘스트 모드가 바꾸거나
-추가한 퀘스트도 QuestCodex가 읽은 그대로 나옵니다.
+The data comes from the [QuestCodex](https://github.com/Viper-9/QuestCodex) server mod, so you get the same results
+as QuestCodex's raid prep page in the browser, without leaving the game. Quests changed or added by quest mods show up
+exactly as QuestCodex reads them.
 
-## 요구사항
+## Requirements
 
 - SPT `~4.1.6`
-- **[QuestCodex](https://github.com/Viper-9/QuestCodex) 1.8.0 이상** (서버 모드). 브리핑 데이터와 지도 파일을 QuestCodex가 제공합니다.
-  QuestCodex가 없으면 탭 안에 "QuestCodex가 필요합니다" 안내만 나옵니다.
+- **[QuestCodex](https://github.com/Viper-9/QuestCodex) 1.8.0 or later** (server mod). It provides the briefing data
+  and the map files. Without it, the tab only shows a "QuestCodex is required" notice.
 
-## 설치
+## Installation
 
-1. QuestCodex 1.8.0 이상을 먼저 설치합니다.
-2. [Releases](../../releases)에서 원하는 버전의 `Briefing-<버전>.zip`을 다운로드합니다.
-3. 압축을 풀어 나오는 `BepInEx` 폴더를 SPT 설치 루트(`EscapeFromTarkov.exe`가 있는 폴더)에 그대로 덮어씁니다.
-   (`BepInEx/plugins/Briefing/...` 구조)
-4. 서버와 게임을 재시작합니다.
+1. Install QuestCodex 1.8.0 or later first.
+2. Download `Briefing-<version>.zip` for the version you want from [Releases](../../releases).
+3. Extract it and overwrite the resulting `BepInEx` folder into your SPT install root (the folder containing
+   `EscapeFromTarkov.exe`). (`BepInEx/plugins/Briefing/...` structure)
+4. Restart the server and the game.
 
-## 여는 법
+## Opening it
 
-캐릭터 화면 탭 줄의 **임무(TASKS) 탭**이 드롭다운으로 바뀝니다. 탭을 눌러 펼친 뒤 **Briefing**을 고르면 브리핑 화면이
-열리고, **TASKS**를 고르면 원래 임무 탭으로 돌아갑니다.
+The **TASKS** tab in the character screen's tab row becomes a dropdown. Click it and pick **Briefing** to open the
+briefing screen, or pick **TASKS** to go back to the regular tasks tab.
 
-![임무 탭 드롭다운](media/tab-dropdown.png)
+![Tasks tab dropdown](media/tab-dropdown.png)
 
-화면 문구는 게임 언어를 따릅니다. 한국어·러시아어를 지원하고, 그 밖의 언어는 영어로 나옵니다.
+The screen follows the game language: Korean and Russian, English for everything else.
 
-## 기능
+## Features
 
-화면은 위쪽 **맵 선택 줄**과 그 아래 3열(퀘스트 목록 · 지도 · 준비물/수집/장비)로 되어 있습니다.
-맵 이름 옆 숫자는 그 맵에서 할 목표 수이고, 목표가 없는 맵도 지도·탈출구를 보려고 누를 수 있습니다.
+The screen has a **map bar** at the top and three columns below it (quest list · map · supplies/collect/gear).
+The number next to each map name is how many objectives you have there. Maps with no objectives can still be picked
+to look at the map and its extracts.
 
-### 퀘스트 목록
+### Quest list
 
-<img src="media/quest-list.png" width="420" alt="퀘스트 목록">
+<img src="media/quest-list.png" width="420" alt="Quest list">
 
-- **이 맵에서** 할 퀘스트와, 맵 상관없이 할 수 있는 **아무 맵에서나** 묶음을 상인 얼굴·목표 요약·진행 수치·막대와 함께 보여 줍니다.
-- 이 맵 퀘스트 이름 옆 번호(①②③…)는 지도 위 마커 번호·색과 같습니다.
-- 레이드 밖에서는 두 묶음이 더 붙습니다.
-  - **완료 가능**: 맨 위. 상인에게 보고만 하면 끝나는 퀘스트.
-  - **제출**: 아이템 건네주기 목표가 남은 퀘스트. 지금 건네줄 수 있는 퀘스트는 이름 뒤에 하늘색 손 아이콘이 붙습니다.
+- Quests to do **on this map**, plus an **Any map** group for quests that work anywhere, with the trader's face,
+  an objective summary, progress numbers and a bar.
+- The number badge (①②③…) next to a map quest matches the marker number and colour on the map.
+- Outside a raid two more groups appear:
+  - **Ready to turn in**: at the top. Quests that only need a report to the trader.
+  - **Hand in**: quests with item hand-over objectives left. Quests you can hand in right now get a light blue hand
+    icon after the name.
 
-### 퀘스트 펼침 · 건네주기 · 완료하러 가기
+### Expanding a quest · hand-overs · turning in
 
-퀘스트 줄을 누르면 그 퀘스트의 목표가 게임 순서대로 펼쳐집니다. 대상 아이템 이름도 아래에 작게 나옵니다.
+Click a quest row to expand its objectives in game order, with the target item names in small print below.
 
-![건네주기](media/quest-handover.png)
+![Hand-over](media/quest-handover.png)
 
-- **건네주기(TURN IN)**: 건네주기 목표 줄의 버튼으로 게임과 똑같이 아이템을 제출합니다. 제출이 끝나면 브리핑이 바로 갱신됩니다.
-- **임무 탭에서 보기(SHOW IN TASKS)**: 임무 탭으로 넘어가 그 퀘스트를 펼쳐 둡니다.
+- **TURN IN** on a hand-over objective submits items the same way the game does. The briefing refreshes as soon as
+  it's done.
+- **SHOW IN TASKS** switches to the tasks tab with that quest expanded.
 
-![완료하러 가기](media/quest-turn-in.png)
+![Turn in](media/quest-turn-in.png)
 
-- **완료 가능** 퀘스트의 **완료하러 가기** 버튼은 그 상인의 임무 화면을 열고 퀘스트를 골라 둡니다. 완료 버튼은 직접 누르고,
-  상인 화면을 닫으면 브리핑 탭으로 돌아옵니다.
-- 펼친 퀘스트는 지도에서 강조되고 오른쪽 열도 그 퀘스트 것만 보여 줍니다(아래 [선택한 퀘스트만 보기](#선택한-퀘스트만-보기)).
+- For a **Ready to turn in** quest, **TURN IN** opens that trader's task screen with the quest selected. You press the
+  game's complete button yourself, and closing the trader screen brings you back to the briefing tab.
+- The expanded quest is highlighted on the map and the right column narrows to that quest (see
+  [Selected quest only](#selected-quest-only) below).
 
-### 지도
+### Map
 
-<img src="media/map.png" width="480" alt="지도">
+<img src="media/map.png" width="480" alt="Map">
 
-- 퀘스트 마커·퀘스트 구역·탈출구·잠긴 문을 한 지도에 표시합니다. 탈출구와 잠긴 문은 마우스를 올리면 이름·조건·열쇠 이름이 나옵니다.
-- 위쪽 체크박스로 **탈출구(PMC / 스캐브 / 환승) · 잠긴 문 · 퀘스트 구역**을 켜고 끕니다.
-- 층 버튼으로 층을 바꿉니다. 다른 층에 퀘스트 마커가 있으면 그 층 버튼에 빨간 점이 찍힙니다.
-- 휠로 확대·축소, 끌어서 이동, 더블클릭으로 원래대로, `+` / `−` 버튼도 있습니다.
-- 퀘스트 줄에 마우스를 올리면 그 퀘스트 마커만 강조되고, 지도 마커를 누르면 목록에서 그 퀘스트로 이동합니다.
-- 지도는 QuestCodex가 제공하는 SVG를 게임 안에서 그립니다. 처음 연 뒤에는 나머지 맵 지도도 뒤에서 미리 그려 둡니다.
+- Quest markers, quest zones, extracts and locked doors on one map. Hover an extract or a locked door to see its
+  name, conditions or key.
+- Toggle **Extracts (PMC / Scav / Transit) · Locked doors · Quest zones** with the checkboxes at the top.
+- Switch floors with the floor buttons. A floor button gets a red dot when another floor has quest markers.
+- Wheel to zoom, drag to pan, double-click to reset, or use the `+` / `−` buttons.
+- Hovering a quest row highlights only its markers, and clicking a map marker jumps to that quest in the list.
+- The map is QuestCodex's SVG, drawn inside the game. After the first map opens, the other maps are prepared in the
+  background.
 
-### 준비물
+### Supplies
 
-![준비물](media/right-supplies.png)
+![Supplies](media/right-supplies.png)
 
-레이드에 **가져가야 할** 퀘스트 아이템(설치할 아이템 등)을 게임 아이콘 격자로 보여 줍니다. 칸마다 보유/필요 수량이 있고,
-모자라면 빨간 칸, 충분하면 초록 칸입니다. 머리줄 오른쪽에 부족한 줄 수가 나옵니다.
+Quest items you need to **bring** into the raid (items to plant and so on), as a grid of game icons. Each cell shows
+have/need; red means short, green means covered. The header shows how many rows are short.
 
-### 수집
+### Collect
 
-<img src="media/right-collect.png" width="420" alt="수집">
+<img src="media/right-collect.png" width="420" alt="Collect">
 
-레이드에서 **찾아와야 할** 아이템입니다. 이 맵에서 나오는 것을 먼저, 그다음 아무 맵에서나 구할 수 있는 것을 보여 줍니다.
-FIR 표시·퀘스트 아이템 표시는 게임 보관함과 같은 그림을 쓰고, 대안 아이템이 있으면 `+N` 이 붙습니다.
-마우스를 올리면 전체 이름·대안·요구 퀘스트가 나옵니다.
+Items you need to **find** in raid. The ones found on this map first, then the ones you can get on any map.
+FIR and quest item marks use the same icons as the game stash, and `+N` means there are alternative items.
+Hover a cell for the full name, the alternatives and the quests that need it.
 
-### 장비
+### Gear
 
-<img src="media/right-gear.png" width="420" alt="장비">
+<img src="media/right-gear.png" width="420" alt="Gear">
 
-- **현재 장비**: 지금 장착한 주무기·권총·헬멧·방탄복(조끼).
-- **무기·장비 조건**: 퀘스트가 요구하는 무기·구경·부착물·착용 장비를 현재 장비와 대조해 줄마다 표시합니다.
-  - ✓ 장착 중 · ◐ 보관함에 있음 · ⚠ 없음
-  - 대안이 많으면 `+N more ▼` 로 접혀 있고, 누르면 전체 목록이 열립니다.
-- **특수 조건**: 한 레이드 안에 완료, 생존 탈출·특정 탈출구 같은 조건.
+- **Current gear**: your equipped primaries, holster, helmet and body armor (or rig).
+- **Weapons and gear**: weapons, calibers, weapon mods and wearables that quests ask for, checked row by row
+  against what you have.
+  - ✓ Equipped · ◐ In stash · ⚠ Missing
+  - Long lists of alternatives collapse into `+N more ▼`; click it to see them all.
+- **Special conditions**: complete in one raid, survive and extract, extract via a specific exit and so on.
 
-### 선택한 퀘스트만 보기
+### Selected quest only
 
-![선택한 퀘스트 필터](media/right-filter.png)
+![Selected quest filter](media/right-filter.png)
 
-퀘스트를 펼치면 준비물·수집·장비 세 탭이 모두 그 퀘스트 것만 보여 줍니다. 위쪽 금색 띠의 **전체 보기 ×**를 누르면
-펼침은 그대로 두고 필터만 끕니다.
+When a quest is expanded, all three tabs (supplies, collect, gear) show only that quest. Click **Show all ×** on the
+gold bar to drop the filter while keeping the quest expanded.
 
-### 열 폭 조절
+### Resizing columns
 
-![열 폭 조절](media/resized-columns.png)
+![Resized columns](media/resized-columns.png)
 
-열 사이 경계를 끌어서 퀘스트 목록·지도·오른쪽 열의 폭을 바꿉니다. 더블클릭하면 기본 폭으로 돌아가고,
-바꾼 폭은 저장되어 게임을 다시 켜도 유지됩니다.
+Drag the borders between columns to change the width of the quest list, the map and the right column.
+Double-click a border to reset it. Widths are saved and kept across game restarts.
 
-### 레이드 중
+### In raid
 
-- 레이드 중에 탭을 열면 **현재 맵이 자동으로 선택**되고 "레이드 중" 표시가 붙습니다. 다른 맵도 누를 수 있습니다.
-- 처치 수 같은 레이드 목표 진행은 **실시간**으로 갱신되고, 끝난 목표는 흐리게 바뀝니다.
-- 장비 판정은 현재 장착 기준이라, 레이드에서 주운 무기로 바꾸면 바로 반영됩니다.
-- 레이드 중에는 서버에 요청하지 않고, 레이드 로딩 때 받아 둔 데이터를 씁니다.
+- Opening the tab in raid **selects the current map** and marks it as in raid. You can still pick other maps.
+- Raid objective progress such as kill counts updates **live**, and finished objectives are greyed out.
+- The gear check uses what you have equipped right now, so swapping to a weapon you picked up counts straight away.
+- No server requests are made during a raid. It uses the data fetched when the raid started loading.
 
-## 설정
+## Settings
 
-BepInEx 설정 파일 `BepInEx/config/com.viper.briefing.cfg` 의 `Layout` 섹션:
+`Layout` section of the BepInEx config file `BepInEx/config/com.viper.briefing.cfg`:
 
-| 항목 | 기본값 | 설명 |
+| Setting | Default | Description |
 |---|---|---|
-| `Side margin` | 20 | 브리핑 화면 좌우 여백 |
-| `Top margin` | 8 | 탭 줄과 화면 위쪽 사이 여백 |
-| `Bottom margin` | 40 | 아래쪽 메뉴 막대를 피하는 여백 |
-| `Left column width` | 0 | 퀘스트 목록 폭 (0 = 기본 540). 열 경계를 끌면 저장 |
-| `Right column width` | 0 | 오른쪽 열 폭 (0 = 기본 470). 열 경계를 끌면 저장 |
+| `Side margin` | 20 | Left and right margin of the briefing screen |
+| `Top margin` | 8 | Gap between the tab row and the top of the screen |
+| `Bottom margin` | 40 | Margin that keeps clear of the bottom menu bar |
+| `Left column width` | 0 | Quest list width (0 = default 540). Saved when you drag a column border |
+| `Right column width` | 0 | Right column width (0 = default 470). Saved when you drag a column border |
 
-## 알려진 한계
+## Known limitations
 
-- **레이드 밖의 진행 수치는 서버 기준입니다.** SPT는 레이드가 끝나야 진행을 서버에 저장하므로, 메뉴의 수치는 마지막 레이드가
-  끝난 시점 값입니다(레이드 중에는 게임에서 직접 읽어 실시간으로 바뀝니다).
-- **장비 판정은 조건 줄마다 따로 합니다.** 게임은 "이 무기에 이 소음기를 달고 처치"처럼 한 무기에 조건을 묶지만, 브리핑은
-  무기와 부착물을 각각 판정합니다. 그래서 소음기가 다른 무기에 달려 있어도 ✓ 가 될 수 있습니다.
-- **탈출구 이름은 모든 언어에서 영어**입니다(tarkov.dev 이름).
-- QuestCodex의 한계를 그대로 물려받습니다. 런타임에 응답을 후킹하는 퀘스트 모드의 변경은 보이지 않습니다
-  ([QuestCodex 알려진 한계](https://github.com/Viper-9/QuestCodex#알려진-한계) 참고).
-- Fika 환경은 확인하지 않았습니다.
+- **Progress outside a raid comes from the server.** SPT only saves raid progress to the server when the raid ends,
+  so the numbers in the menu are as of your last raid (in raid they are read from the game and update live).
+- **The gear check works row by row.** The game ties conditions to one weapon ("kill with this weapon fitted with this
+  suppressor"), but the briefing checks the weapon and the mod separately. A suppressor fitted to a different weapon
+  can still show ✓.
+- **Extract names are in English** in every language (tarkov.dev names).
+- QuestCodex's limitations carry over. Changes from quest mods that hook responses at runtime don't show up
+  (see [QuestCodex known limitations](https://github.com/Viper-9/QuestCodex/blob/main/README.en.md#known-limitations)).
+- Not tested with Fika.
 
-## 라이선스
+## License
 
 Copyright (c) 2026 Viper-9. **All Rights Reserved.**
 
-이 모드를 개인적·비상업적 용도로 **원본 그대로** 내려받아 사용할 수 있습니다. 재배포(다른 곳에 재업로드
-포함), 수정, 2차적 저작물 제작, 상업적 이용은 저작권자의 사전 서면 허락 없이는 금지됩니다. 전체 조항은
-[LICENSE](LICENSE.md)를 참고하세요.
+You may download and use this mod, unmodified, for personal, non-commercial purposes. Redistribution
+(including re-uploading elsewhere), modification, derivative works and commercial use are prohibited
+without the prior written permission of the copyright holder. See [LICENSE](LICENSE.md) for the full terms.
 
-제3자 구성요소는 각자의 라이선스를 따릅니다. [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)를 참고하세요.
-스크린샷 속 지도는 QuestCodex가 제공하는 지도로, 저작자·라이선스는 지도 칸 오른쪽 아래에 표시됩니다.
+Third-party components remain under their own licenses. See [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md).
+The map in the screenshots is the one QuestCodex provides; its author and license are shown in the bottom right
+corner of the map.
