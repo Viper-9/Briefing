@@ -13,6 +13,7 @@ namespace Briefing.Tab;
 // 탭 줄 밑에 두지만 자기 Canvas(overrideSorting)로 그려 아래 화면 내용에 가리지 않는다. 탭 줄의 직접 자식 중 켜진 Tab 이 없게 해서
 // 탭 줄을 다시 배치하는 다른 모드(Operator Traits)가 이 메뉴를 탭으로 세지 않는다.
 // 임무 탭 글자는 지금 보는 쪽("임무 ▼" / "브리핑 ▼")을 따르고, 브리핑을 보는 동안 임무 탭을 고른 모양으로 칠한다.
+// 메뉴가 열려 있거나 브리핑을 보는 동안에는 게임이 고른 탭에 하듯 임무 탭을 탭 줄 맨 뒤로 옮겨 옆 탭 위에 그린다.
 internal sealed class TabDropdown : MonoBehaviour
 {
     private const string MenuName = "BriefingTabMenu";
@@ -38,6 +39,7 @@ internal sealed class TabDropdown : MonoBehaviour
     private float _t; // 펼침 정도 0..1
     private bool _paintedBriefing;
     private bool _failed;
+    private int _restoreIndex = -1; // 임무 탭을 올리기 전 자리. 올리지 않았으면 -1
 
     internal Transform Root => _root;
 
@@ -251,6 +253,7 @@ internal sealed class TabDropdown : MonoBehaviour
                 ApplyAnimation();
                 if (!_open && _t <= 0f) _clip.gameObject.SetActive(false);
             }
+            RaiseNotes(_open || _t > 0f || _briefingShown());
         }
         catch (Exception e)
         {
@@ -284,6 +287,26 @@ internal sealed class TabDropdown : MonoBehaviour
             rt.sizeDelta = new Vector2(0f, h);
             rt.anchoredPosition = new Vector2(0f, -i * (h + Gap));
         }
+    }
+
+    // 게임 TabGroup.SelectTab 은 고른 탭을 SetAsLastSibling 으로 맨 뒤에 둬서 옆 탭 위에 그린다. 임무 탭 클릭은 메뉴가 받아
+    // 그 일이 일어나지 않으므로 같은 방식으로 올린다. 내릴 때는 그사이 게임이 순서를 바꾸지 않았을 때만 원래 자리로 돌린다.
+    private void RaiseNotes(bool raise)
+    {
+        var t = _notes.transform;
+        var parent = t.parent;
+        if (parent == null) return;
+        var last = t.GetSiblingIndex() == parent.childCount - 1;
+        if (raise)
+        {
+            if (last) return;
+            if (_restoreIndex < 0) _restoreIndex = t.GetSiblingIndex();
+            t.SetAsLastSibling();
+            return;
+        }
+        if (_restoreIndex < 0) return;
+        if (last && !_tasksShown()) t.SetSiblingIndex(Mathf.Min(_restoreIndex, parent.childCount - 1));
+        _restoreIndex = -1;
     }
 
     // 임무 탭 글자와, 브리핑을 보는 동안의 고른 모양. LocalizedText 가 언어 갱신 때 글자를 되돌려도 다음 프레임에 다시 맞춘다.
@@ -325,6 +348,7 @@ internal sealed class TabDropdown : MonoBehaviour
         if (_notes == null) return;
         UiKit.Guard("tab menu restore", () =>
         {
+            RaiseNotes(false);
             SetLabels(_notesLabels, TasksTitle());
             _notes.UpdateVersion();
         });
