@@ -85,7 +85,7 @@ public class StatusLineTests
 
     [Theory]
     [InlineData(FetchKind.QuestCodexMissing, "QuestCodex가 필요합니다. SPT 서버에 QuestCodex를 설치하세요 (SPT_Runtime/user/mods/QuestCodex)")]
-    [InlineData(FetchKind.QuestCodexOutdated, "QuestCodex 1.8.0 이상으로 업데이트하세요")]
+    [InlineData(FetchKind.QuestCodexOutdated, "QuestCodex 1.9.0 이상으로 업데이트하세요")]
     [InlineData(FetchKind.BriefingOutdated, "Briefing을 업데이트하세요. QuestCodex가 더 새로운 응답 형식을 보냅니다")]
     public void Install_and_version_problems_block_the_list(FetchKind kind, string text)
     {

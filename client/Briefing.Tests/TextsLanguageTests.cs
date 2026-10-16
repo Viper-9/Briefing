@@ -19,7 +19,7 @@ public class TextsLanguageTests
             Assert.Equal("Hand in", Texts.ReadyTitle);
             Assert.Equal("1 objective to hand over", Texts.HandoverCount(1));
             Assert.Equal("3 objectives to hand over", Texts.HandoverCount(3));
-            Assert.Equal("Update QuestCodex to 1.8.0 or later", Texts.QuestCodexOutdated);
+            Assert.Equal("Update QuestCodex to 1.9.0 or later", Texts.QuestCodexOutdated);
             Assert.Equal("Loading briefing...", Texts.Loading);
             Assert.Equal("Ready to turn in", Texts.TurnInTitle);
             Assert.Equal("Report to the trader to complete", Texts.TurnInSummary);

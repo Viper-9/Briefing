@@ -22,7 +22,7 @@ public static class Texts
     private static string N(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
 
     // 브리핑 라우트가 처음 들어간 QuestCodex 버전. 1.7.0 에는 라우트가 없다.
-    public const string RequiredQuestCodex = "1.8.0";
+    public const string RequiredQuestCodex = "1.9.0";
     public const string UnknownTraderInitial = "?";
 
     public static string TabTitle => L("브리핑", "Briefing", "Брифинг");
