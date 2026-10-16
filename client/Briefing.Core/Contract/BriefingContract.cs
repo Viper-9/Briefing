@@ -171,11 +171,16 @@ public sealed class BriefingGear
 // Label: weapon|caliber|weaponMod|equipment|forbidden. 번역은 클라이언트가 한다.
 // Names[i] 는 대안 i 의 이름, Tpls[i] 는 그 대안에 다 있어야 하는 tpl 들. 화면은 "외 N종"으로 줄여도 장착 판정에는 전부 쓴다.
 // caliber 는 Names 가 게임 구경 코드("all" 가능)이고 Tpls[i] 는 비어 있다.
+// build 는 한 총에 같이 있어야 하는 무기 조건과 부착물이다. Names·Tpls 는 부착물 대안, Weapons·Calibers 는 그 총의 조건이고
+// 둘 다 비면 아무 무기. ModParents 는 부착물 대안 tpl 들의 부모 id 로, 인정 안 되는 같은 종류 부품을 찾을 때 쓴다.
 public sealed class BriefingGearRow
 {
     public string Label { get; set; }
     public List<string> Names { get; set; } = new List<string>();
     public List<List<string>> Tpls { get; set; } = new List<List<string>>();
+    public List<BriefingItemRef> Weapons { get; set; } = new List<BriefingItemRef>();
+    public List<string> Calibers { get; set; } = new List<string>();
+    public List<string> ModParents { get; set; } = new List<string>();
 }
 
 public sealed class BriefingSpecial

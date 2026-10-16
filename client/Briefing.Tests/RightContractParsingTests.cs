@@ -114,6 +114,37 @@ public class RightContractParsingTests
         Assert.Empty(map.Gear[0].Rows[0].Tpls[0]);
         Assert.Empty(r.Anywhere.Bring);
         Assert.Empty(r.Anywhere.Gear);
+        Assert.Empty(map.Gear[0].Rows[0].Weapons); // build 가 아닌 줄은 무기 조건이 없다
+        Assert.Empty(map.Gear[0].Rows[0].ModParents);
+    }
+
+    [Fact]
+    public void Reads_build_rows_with_weapons_calibers_and_mod_parents()
+    {
+        var r = BriefingParser.Parse(@"{""schemaVersion"":1,""maps"":[],""anywhere"":{""gear"":[{""questId"":""q"",""rows"":[
+            {""label"":""build"",""names"":[""Hybrid 46"",""PBS-1""],""tpls"":[[""hybrid""],[""pbs""]],
+             ""weapons"":[{""tpl"":""ak105"",""name"":""AK-105""}],""calibers"":[],""modParents"":[""550aa4cd4bdc2dd8348b456c""]}]}]}}").Response;
+        var row = r.Anywhere.Gear.Single().Rows.Single();
+
+        Assert.Equal("build", row.Label);
+        Assert.Equal("ak105", row.Weapons.Single().Tpl);
+        Assert.Equal("AK-105", row.Weapons.Single().Name);
+        Assert.Empty(row.Calibers);
+        Assert.Equal("550aa4cd4bdc2dd8348b456c", row.ModParents.Single());
+        Assert.Equal(new[] { "pbs" }, row.Tpls[1]);
+    }
+
+    [Fact]
+    public void Null_build_fields_on_other_rows_stay_empty()
+    {
+        // 서버는 build 가 아닌 줄에도 세 키를 null 로 넣는다
+        var r = BriefingParser.Parse(@"{""schemaVersion"":1,""maps"":[],""anywhere"":{""gear"":[{""questId"":""q"",""rows"":[
+            {""label"":""weapon"",""names"":[""SVD""],""tpls"":[[""svd""]],""weapons"":null,""calibers"":null,""modParents"":null}]}]}}").Response;
+        var row = r.Anywhere.Gear.Single().Rows.Single();
+
+        Assert.Empty(row.Weapons);
+        Assert.Empty(row.Calibers);
+        Assert.Empty(row.ModParents);
     }
 
     [Fact]
