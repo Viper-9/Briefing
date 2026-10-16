@@ -90,8 +90,9 @@ internal sealed class GearReader
                 if (item == null) continue;
                 var parts = new List<Item>();
                 Item.TraverseTree(item, parts, (i, container) => container is Slot);
+                var mods = parts.Where(p => p != null && p != item).ToList();
                 weapons.Add(new EquippedWeapon(slot, item.StringTemplateId, CaliberOf(item),
-                    new HashSet<string>(parts.Where(p => p != null && p != item).Select(p => p.StringTemplateId))));
+                    new HashSet<string>(mods.Select(p => p.StringTemplateId)), mods.Select(PartOf).ToList(), MountableOf(item)));
             }
             var worn = new HashSet<string>();
             foreach (EquipmentSlot slot in Enum.GetValues(typeof(EquipmentSlot)))
@@ -120,7 +121,7 @@ internal sealed class GearReader
         var snapshot = new GearSnapshot { EquipmentRead = gear != null, StashRead = _stash != null };
         if (gear != null)
         {
-            snapshot.Weapons = gear.Weapons.Select(w => new GearWeapon(w.Tpl, w.Caliber, w.Parts)).ToList();
+            snapshot.Weapons = gear.Weapons.Select(w => new GearWeapon(w.Tpl, w.Caliber, w.Parts, w.Details, w.Mountable)).ToList();
             snapshot.Worn = gear.Worn;
         }
         if (_stash != null)
@@ -158,24 +159,57 @@ internal sealed class GearReader
         }
     }
 
+    // build 줄의 ⚠ 이유에 쓰는 부품 정보. 이름은 게임 로케일의 짧은 이름.
+    private static GearPart PartOf(Item item)
+        => new GearPart(item.StringTemplateId, item.Template?.ParentId?.ToString(), ItemIcons.ShortName(item.StringTemplateId, item.Template?.Name));
+
+    // 무기와 달린 부품의 슬롯 필터에 적힌 id 전부. Weapon.AllSlots 가 달린 부품 안의 슬롯까지 펼쳐 준다.
+    // 필터에는 부모 분류 id 가 섞일 수 있지만 무기 부품 슬롯은 대부분 tpl 목록이라 그대로 비교한다. 못 읽으면 null.
+    private static List<string> MountableOf(Item item)
+    {
+        try
+        {
+            if (!(item is CompoundItem compound)) return null;
+            var ids = new List<string>();
+            foreach (var slot in compound.AllSlots)
+            {
+                if (slot?.Filters == null) continue;
+                foreach (var filter in slot.Filters)
+                {
+                    if (filter?.Filter == null) continue;
+                    foreach (var id in filter.Filter) ids.Add(id.ToString());
+                }
+            }
+            return ids;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
     // 서버 응답과 같은 모양(Caliber556x45NATO)이 필요해서 접두어를 떼는 Weapon.AmmoCaliber 대신 템플릿 값을 쓴다.
     private static string CaliberOf(Item item) => item is Weapon weapon ? (weapon.Template as WeaponTemplate)?.ammoCaliber : null;
 }
 
 internal sealed class EquippedWeapon
 {
-    internal EquippedWeapon(EquipmentSlot slot, string tpl, string caliber, HashSet<string> parts)
+    internal EquippedWeapon(EquipmentSlot slot, string tpl, string caliber, HashSet<string> parts, List<GearPart> details, List<string> mountable)
     {
+        Mountable = mountable;
         Slot = slot;
         Tpl = tpl;
         Caliber = caliber;
         Parts = parts;
+        Details = details;
     }
 
     internal EquipmentSlot Slot { get; }
     internal string Tpl { get; }
     internal string Caliber { get; }
     internal HashSet<string> Parts { get; }
+    internal List<GearPart> Details { get; }
+    internal List<string> Mountable { get; }
 }
 
 // 아이콘은 실제 장착 아이템으로 그려서 무기는 지금 달린 부품이 그대로 보인다. 빈 슬롯은 Item 이 null.
