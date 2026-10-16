@@ -16,12 +16,12 @@
 ## 요구사항
 
 - SPT `~4.1.6`
-- **[QuestCodex](https://github.com/Viper-9/QuestCodex) 1.8.0 이상** (서버 모드). 브리핑 데이터와 지도 파일을 QuestCodex가 제공합니다.
+- **[QuestCodex](https://github.com/Viper-9/QuestCodex) 1.9.0 이상** (서버 모드). 브리핑 데이터와 지도 파일을 QuestCodex가 제공합니다.
   QuestCodex가 없으면 탭 안에 "QuestCodex가 필요합니다" 안내만 나옵니다.
 
 ## 설치
 
-1. QuestCodex 1.8.0 이상을 먼저 설치합니다.
+1. QuestCodex 1.9.0 이상을 먼저 설치합니다.
 2. [Releases](../../releases)에서 원하는 버전의 `Briefing-<버전>.zip`을 다운로드합니다.
 3. 압축을 풀어 나오는 `BepInEx` 폴더를 SPT 설치 루트(`EscapeFromTarkov.exe`가 있는 폴더)에 그대로 덮어씁니다.
    (`BepInEx/plugins/Briefing/...` 구조)

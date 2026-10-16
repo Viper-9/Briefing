@@ -16,12 +16,12 @@ exactly as QuestCodex reads them.
 ## Requirements
 
 - SPT `~4.1.6`
-- **[QuestCodex](https://github.com/Viper-9/QuestCodex) 1.8.0 or later** (server mod). It provides the briefing data
+- **[QuestCodex](https://github.com/Viper-9/QuestCodex) 1.9.0 or later** (server mod). It provides the briefing data
   and the map files. Without it, the tab only shows a "QuestCodex is required" notice.
 
 ## Installation
 
-1. Install QuestCodex 1.8.0 or later first.
+1. Install QuestCodex 1.9.0 or later first.
 2. Download `Briefing-<version>.zip` for the version you want from [Releases](../../releases).
 3. Extract it and overwrite the resulting `BepInEx` folder into your SPT install root (the folder containing
    `EscapeFromTarkov.exe`). (`BepInEx/plugins/Briefing/...` structure)
