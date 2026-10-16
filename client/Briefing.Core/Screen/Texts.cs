@@ -192,6 +192,11 @@ public static class Texts
     public static string TagStash => L("보관함", "in stash", "в схроне");
     public static string ForbiddenClear => L("해당 장비 착용 안 함", "Not wearing any of these", "Ничего из этого не надето");
     public static string WearingNow(string name) => L($"착용 중: {name}", $"Wearing: {name}", $"Надето: {name}");
+    // build 줄의 ⚠ 이유
+    public static string BuildReasonLabel => L("확인", "Check", "Проверка");
+    public static string BuildOnOtherWeapon => L("인정 부착물이 다른 총에 달려 있음", "Accepted mod is on another weapon", "Нужный мод стоит на другом оружии");
+    public static string BuildNotAccepted(string names) => L($"인정 안 되는 부착물: {names}", $"Not accepted: {names}", $"Не засчитывается: {names}");
+    public static string BuildNoMods => L("조건 무기에 인정 부착물 없음", "No accepted mod on the required weapon", "На нужном оружии нет подходящего мода");
     // 화살표는 화면이 붙인다. ▼▲ 는 한글 폴백에 있고 ▾▴ 는 없다.
     public static string MoreAlternatives(int count) => L($"외 {count}종", $"+{count} more", $"+{count} ещё");
     public static string ListCount(int count) => L($"목록 {count}종", $"List of {count}", $"Список: {count}");

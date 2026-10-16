@@ -38,6 +38,7 @@ public class TextsTableTests
         yield return ("FindHere", Texts.FindHere("Customs"));
         yield return ("FilterOnly", Texts.FilterOnly("Quest"));
         yield return ("OrItems", Texts.OrItems("A, B"));
+        yield return ("BuildNotAccepted", Texts.BuildNotAccepted("PBS-1"));
         yield return ("HaveNeed", Texts.HaveNeed("1", "2"));
         yield return ("ShortBy", Texts.ShortBy("1"));
         foreach (var label in new[] { "weapon", "caliber", "weaponMod", "equipment", "forbidden" }) yield return ("GearLabel", Texts.GearLabel(label));

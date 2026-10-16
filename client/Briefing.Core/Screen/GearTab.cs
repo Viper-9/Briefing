@@ -93,7 +93,7 @@ public static class GearTab
     public static GearTabModel Build(BriefingResponse response, BriefingMap map, string filterQuestId, GearSnapshot gear, Func<string, string> questName)
     {
         var gearRows = Merge((map?.Gear ?? new List<BriefingGear>()).Concat(response.Anywhere.Gear), g => g.QuestId, g => g.Rows,
-            r => r.Label + "\u0000" + string.Join("\u0001", r.Names));
+            GearRowKey);
         var specialRows = Merge((map?.Special ?? new List<BriefingSpecial>()).Concat(response.Anywhere.Special), s => s.QuestId, s => s.Rows,
             r => r.Kind + "\u0000" + string.Join("\u0001", r.ExitStatuses) + "\u0000" + r.ExitName);
 
@@ -124,6 +124,11 @@ public static class GearTab
         for (var i = 0; i < rows.Count; i++)
         {
             var row = rows[i];
+            if (row.Label == GearCheck.Build)
+            {
+                lines.AddRange(BuildLines(questId + "/" + i, row, gear));
+                continue;
+            }
             var check = GearCheck.Row(row, gear);
             var forbidden = row.Label == GearCheck.Forbidden;
             var count = forbidden ? row.Names.Count : row.Names.Count - 1;
@@ -132,6 +137,31 @@ public static class GearTab
         }
         var verdict = GearCheck.Overall(lines.Select(l => l.Mark));
         return new GearBlockModel(questId, questName(questId), verdict, lines, Array.Empty<SpecialLineModel>());
+    }
+
+    // build 줄 하나를 무기(조건이 있을 때), 필수 부착물, ⚠ 이유(있을 때) 줄로 펼친다. 부착물 줄이 build 줄의 키를 그대로 쓴다.
+    private static IEnumerable<GearLineModel> BuildLines(string key, BriefingGearRow row, GearSnapshot gear)
+    {
+        var check = GearCheck.CheckBuild(row, gear);
+        if (check.Weapon != null)
+            yield return Line(key + "/w", Texts.GearLabel(check.WeaponLabel), check.Weapon);
+        yield return Line(key, Texts.GearLabel(GearCheck.WeaponMod), check.Mods);
+        if (check.Reason != null)
+            yield return new GearLineModel(key + "/r", Texts.BuildReasonLabel, true, GearMark.Missing, check.Reason, null, null, Array.Empty<GearAlt>());
+    }
+
+    private static GearLineModel Line(string key, string label, GearRowCheck check)
+    {
+        var count = check.Alternatives.Count - 1;
+        return new GearLineModel(key, label, false, check.Mark, check.Lead, check.Tag, count <= 0 ? null : Texts.MoreAlternatives(count), check.Alternatives);
+    }
+
+    // 라벨과 이름 목록이 같으면 같은 줄. build 줄은 무기 조건까지 같아야 한다.
+    private static string GearRowKey(BriefingGearRow r)
+    {
+        var key = r.Label + "\u0000" + string.Join("\u0001", r.Names);
+        if (r.Label != GearCheck.Build) return key;
+        return key + "\u0000" + string.Join("\u0001", r.Weapons.Select(w => w.Tpl)) + "\u0000" + string.Join("\u0001", r.Calibers);
     }
 
     // exit 줄은 탈출 상태와 탈출구 이름(웹 exitText). 둘 다 없거나 모르는 종류면 null.

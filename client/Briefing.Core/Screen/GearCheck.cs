@@ -15,18 +15,38 @@ public enum GearMark
 }
 
 // 장착 무기. Caliber 는 템플릿 ammoCaliber 값(예: Caliber556x45NATO), Parts 는 슬롯에 달린 부착물 tpl 전부(무기 자신은 빼고).
+// Details 는 같은 부착물의 부모 id 와 이름으로, build 줄의 ⚠ 이유에만 쓴다. 없으면 빈 목록.
+// Mountable 은 무기와 달린 부품의 슬롯 필터에 적힌 tpl 전부다. 못 읽었으면 null 이고, 그때는 달 수 있다고 본다.
 public sealed class GearWeapon
 {
-    public GearWeapon(string tpl, string caliber, IEnumerable<string> parts)
+    public GearWeapon(string tpl, string caliber, IEnumerable<string> parts, IEnumerable<GearPart> details = null, IEnumerable<string> mountable = null)
     {
         Tpl = tpl;
         Caliber = caliber;
         Parts = new HashSet<string>(parts ?? Enumerable.Empty<string>());
+        Details = (details ?? Enumerable.Empty<GearPart>()).ToList();
+        Mountable = mountable == null ? null : new HashSet<string>(mountable);
     }
 
     public string Tpl { get; }
     public string Caliber { get; }
     public HashSet<string> Parts { get; }
+    public IReadOnlyList<GearPart> Details { get; }
+    public HashSet<string> Mountable { get; }
+}
+
+public sealed class GearPart
+{
+    public GearPart(string tpl, string parentId, string name)
+    {
+        Tpl = tpl;
+        ParentId = parentId;
+        Name = name;
+    }
+
+    public string Tpl { get; }
+    public string ParentId { get; }
+    public string Name { get; }
 }
 
 // 게임에서 읽은 장비. Client 의 GearReader 가 채운다.
@@ -74,7 +94,26 @@ public sealed class GearRowCheck
     public IReadOnlyList<GearAlt> Alternatives { get; }
 }
 
+// build 줄의 판정. Weapon 은 무기 조건이 없으면 null 이고 WeaponLabel 은 weapon 이나 caliber.
+// Reason 은 조건 무기를 장착했는데 부착물이 ✓ 가 아닐 때만 있다.
+public sealed class GearBuildCheck
+{
+    public GearBuildCheck(string weaponLabel, GearRowCheck weapon, GearRowCheck mods, string reason)
+    {
+        WeaponLabel = weaponLabel;
+        Weapon = weapon;
+        Mods = mods;
+        Reason = reason;
+    }
+
+    public string WeaponLabel { get; }
+    public GearRowCheck Weapon { get; }
+    public GearRowCheck Mods { get; }
+    public string Reason { get; }
+}
+
 // 줄마다 따로 판정한다. 서버가 퀘스트 단위로 줄을 합쳐 보내 목표 경계를 알 수 없으므로 근사치다.
+// 무기와 부착물을 한 총에서 봐야 하는 조건은 서버가 build 줄로 묶어 보내고 CheckBuild 가 판정한다.
 public static class GearCheck
 {
     public const string Weapon = "weapon";
@@ -82,6 +121,7 @@ public static class GearCheck
     public const string WeaponMod = "weaponMod";
     public const string Equipment = "equipment";
     public const string Forbidden = "forbidden";
+    public const string Build = "build";
     public const string AnyCaliber = "all";
 
     public static GearRowCheck Row(BriefingGearRow row, GearSnapshot gear)
@@ -89,12 +129,101 @@ public static class GearCheck
         var names = row.Names.Select(n => DisplayName(row.Label, n)).ToList();
         if (row.Label == Forbidden) return ForbiddenRow(row, names, gear);
         var known = gear != null && gear.EquipmentRead && IsKnownLabel(row.Label);
-        if (!known)
-            return new GearRowCheck(GearMark.Unknown, names.FirstOrDefault() ?? "", null,
-                names.Select(n => new GearAlt(n, GearMark.Unknown)).ToList());
+        if (!known) return Unmarked(names);
 
         var marks = new List<GearMark>();
         for (var i = 0; i < names.Count; i++) marks.Add(AltMark(row, i, gear));
+        return Assemble(names, marks);
+    }
+
+    // build 줄. 부착물은 무기 조건에 맞는 장착 무기에 달려 있어야 ✓ 이고, 보관함은 총과 따로 있어도 ◐ 로 본다.
+    // 조건 무기를 장착했는데 ✓ 가 아니면 Reason 에 이유를 넣는다.
+    public static GearBuildCheck CheckBuild(BriefingGearRow row, GearSnapshot gear)
+    {
+        var weaponRow = WeaponRow(row);
+        var weapon = weaponRow == null ? null : Row(weaponRow, gear);
+        row = DistinctMods(row);
+        var names = row.Names.Select(n => n?.Trim() ?? "").ToList();
+        if (gear == null || !gear.EquipmentRead) return new GearBuildCheck(weaponRow?.Label, weapon, Unmarked(names), null);
+
+        var fits = gear.Weapons.Where(w => Fits(row, w)).ToList();
+        var marks = new List<GearMark>();
+        for (var i = 0; i < names.Count; i++)
+        {
+            var tpls = i < row.Tpls.Count ? row.Tpls[i] : null;
+            if (tpls == null || tpls.Count == 0) marks.Add(GearMark.Missing);
+            else if (fits.Any(w => tpls.All(w.Parts.Contains))) marks.Add(GearMark.Equipped);
+            else marks.Add(gear.StashRead && tpls.All(gear.Stash.Contains) ? GearMark.Stash : GearMark.Missing);
+        }
+        var mods = Assemble(names, marks);
+        return new GearBuildCheck(weaponRow?.Label, weapon, mods, mods.Mark == GearMark.Equipped ? null : BuildReason(row, gear, fits));
+    }
+
+    // 원본 데이터에 같은 부착물이 두 번 들어 있는 경우가 있다(Daniel Defense WAVE QD 등). 이름과 tpl 묶음이 같으면 처음 것만 둔다.
+    private static BriefingGearRow DistinctMods(BriefingGearRow row)
+    {
+        var seen = new HashSet<string>();
+        var names = new List<string>();
+        var tpls = new List<List<string>>();
+        for (var i = 0; i < row.Names.Count; i++)
+        {
+            var group = i < row.Tpls.Count ? row.Tpls[i] : null;
+            if (!seen.Add(row.Names[i] + "\u0000" + string.Join("\u0001", group ?? new List<string>()))) continue;
+            names.Add(row.Names[i]);
+            tpls.Add(group);
+        }
+        if (names.Count == row.Names.Count) return row;
+        return new BriefingGearRow
+        {
+            Label = row.Label, Names = names, Tpls = tpls,
+            Weapons = row.Weapons, Calibers = row.Calibers, ModParents = row.ModParents,
+        };
+    }
+
+    // 무기 조건을 weapon 이나 caliber 줄로 바꿔 Row 판정을 그대로 쓴다. 조건이 없으면 null.
+    private static BriefingGearRow WeaponRow(BriefingGearRow row)
+    {
+        if (row.Weapons.Count > 0)
+            return new BriefingGearRow
+            {
+                Label = Weapon,
+                Names = row.Weapons.Select(w => w.Name).ToList(),
+                Tpls = row.Weapons.Select(w => new List<string> { w.Tpl }).ToList(),
+            };
+        if (row.Calibers.Count > 0)
+            return new BriefingGearRow { Label = Caliber, Names = row.Calibers.ToList(), Tpls = row.Calibers.Select(_ => new List<string>()).ToList() };
+        return null;
+    }
+
+    private static bool AnyWeapon(BriefingGearRow row)
+        => row.Weapons.Count == 0 && row.Calibers.All(c => c?.Trim() == AnyCaliber);
+
+    private static bool Fits(BriefingGearRow row, GearWeapon weapon)
+        => (row.Weapons.Count == 0 || row.Weapons.Any(w => w.Tpl == weapon.Tpl))
+           && (row.Calibers.Count == 0 || row.Calibers.Any(c => c?.Trim() == AnyCaliber || c?.Trim() == weapon.Caliber));
+
+    // 다른 총에 인정 부착물이 달림 > 조건 무기에 인정 안 되는 같은 종류 부품이 달림 > 그냥 없음 순으로 본다.
+    private static string BuildReason(BriefingGearRow row, GearSnapshot gear, List<GearWeapon> fits)
+    {
+        var groups = row.Tpls.Where(g => g != null && g.Count > 0).ToList();
+        var accepted = new HashSet<string>(groups.SelectMany(g => g));
+        // 아무 총이면 장착한 총이 인정 부품을 아예 못 받을 수 있다(9x39 총에 AK 탄창). 받을 수 있는 총만 본다.
+        // 무기나 구경을 정한 조건은 어댑터를 거쳐야 달리는 부품도 있어서 슬롯 목록으로 거르지 않는다.
+        var candidates = AnyWeapon(row) ? fits.Where(w => w.Mountable == null || accepted.Any(w.Mountable.Contains)).ToList() : fits;
+        if (candidates.Count == 0) return null;
+        if (gear.Weapons.Except(fits).Any(w => groups.Any(g => g.All(w.Parts.Contains)))) return Texts.BuildOnOtherWeapon;
+        var wrong = candidates.SelectMany(w => w.Details)
+            .Where(p => row.ModParents.Contains(p.ParentId) && !accepted.Contains(p.Tpl) && !string.IsNullOrWhiteSpace(p.Name))
+            .Select(p => p.Name).Distinct().ToList();
+        return wrong.Count > 0 ? Texts.BuildNotAccepted(string.Join(", ", wrong)) : Texts.BuildNoMods;
+    }
+
+    private static GearRowCheck Unmarked(List<string> names)
+        => new GearRowCheck(GearMark.Unknown, names.FirstOrDefault() ?? "", null, names.Select(n => new GearAlt(n, GearMark.Unknown)).ToList());
+
+    // 대안별 판정을 줄 판정으로 묶는다. 맞는 대안이 먼저 오고, 대표 이름은 ✓·◐ 면 맞는 첫 대안, ⚠ 면 첫 대안.
+    private static GearRowCheck Assemble(List<string> names, List<GearMark> marks)
+    {
         var mark = marks.Contains(GearMark.Equipped) ? GearMark.Equipped : marks.Contains(GearMark.Stash) ? GearMark.Stash : GearMark.Missing;
         var leadIndex = mark == GearMark.Missing ? 0 : marks.IndexOf(mark);
         var alts = new List<GearAlt>();
