@@ -21,6 +21,7 @@ internal sealed class QuestBridge
     private bool _warned;
     private bool _objectivesWarned;
     private bool _turnInsWarned;
+    private bool _findsWarned;
     private bool _liveWarned;
     private TaskCompletionSource<Item[]> _picking; // 선택 창이 떠 있는 동안만 있다
 
@@ -73,6 +74,36 @@ internal sealed class QuestBridge
             if (!_warned) Log.Warn($"handover goals unavailable: {e}");
             _warned = true;
             return Array.Empty<HandoverGoal>();
+        }
+    }
+
+    // 진행 중 퀘스트의 남은 찾기 목표. 건네주기가 찾기를 끝내야 보이는 퀘스트도 "제출" 묶음에 넣으려고 Goals 와 같은 조건으로 읽는다.
+    // 레이드 중이거나 못 읽으면 null.
+    internal IReadOnlyList<FindGoal> Finds()
+    {
+        try
+        {
+            if (!CanHandover) return null;
+            var controller = GameRefs.QuestControllerOf(_screen);
+            var finds = new List<FindGoal>();
+            foreach (var quest in controller.Quests)
+            {
+                if (!IsMenuQuest(controller, quest, EQuestStatus.Started)) continue;
+                foreach (var condition in quest.NecessaryConditions)
+                {
+                    // IsConditionDone 은 검사기가 없으면 예외를 던지므로 먼저 확인한다.
+                    if (!(condition is ConditionFindItem) || !quest.ProgressCheckers.ContainsKey(condition) || quest.IsConditionDone(condition)) continue;
+                    finds.Add(new FindGoal(quest.Id, quest.Template.Name, quest.Template.TraderId, condition.id.ToString(),
+                        condition.FormattedDescription));
+                }
+            }
+            return finds;
+        }
+        catch (Exception e)
+        {
+            if (!_findsWarned) Log.Warn($"find goals unavailable: {e}");
+            _findsWarned = true;
+            return null;
         }
     }
 

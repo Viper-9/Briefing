@@ -181,6 +181,8 @@ internal sealed class BundleBriefingView : IBriefingView
         }
         IReadOnlyList<HandoverGoal> goals = null;
         UiKit.Guard("handover goals", () => goals = _bridge.Goals()); // 실패해도 건네주기만 빠진다
+        IReadOnlyList<FindGoal> finds = null;
+        UiKit.Guard("find goals", () => finds = _bridge.Finds()); // 실패하면 찾기만 남은 퀘스트가 "제출" 묶음에서 빠진다
         // 펼친 퀘스트의 게임 목표. 실패하면 null 이고 펼침은 서버 목표와 건네주기 줄로 그린다.
         IReadOnlyList<GameObjective> objectives = null;
         if (BriefingState.ExpandedQuestId != null)
@@ -190,7 +192,7 @@ internal sealed class BundleBriefingView : IBriefingView
         UiKit.Guard("turn-in quests", () => turnIns = _bridge.TurnIns());
         LeftColumnModel model = null;
         UiKit.Guard("build model", () => model = LeftColumn.Build(response, BriefingState.SelectedMapKey,
-            goals, BriefingState.ExpandedSection, BriefingState.ExpandedQuestId, objectives, turnIns, raidMapKey));
+            goals, BriefingState.ExpandedSection, BriefingState.ExpandedQuestId, objectives, turnIns, raidMapKey, finds));
         _model = model;
         if (model == null)
         {
