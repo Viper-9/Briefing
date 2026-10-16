@@ -198,6 +198,48 @@ public class QuestExpandTests
         Assert.Null(LeftColumn.Build(Active, "bigmap", new[] { Goal(Viewership, "v1", ready: false) }).Ready); // 이미 보이는 묶음에 있는 퀘스트뿐
     }
 
+    private static FindGoal Find(string questId, string conditionId, string name = "Q", string text = "Find", string trader = Prapor) =>
+        new FindGoal(questId, name, trader, conditionId, text);
+
+    [Fact]
+    public void Ready_section_lists_quests_with_only_finds_left()
+    {
+        var goals = new[] { Goal("z", "z1", ready: false, name: "Zeta") };
+        var finds = new[]
+        {
+            Find("a", "a1", name: "Alpha", text: "Find the letter"),
+            Find("b", "b1", name: "Bravo"), Find("b", "b2", name: "Bravo"),
+            Find(Viewership, "v1", name: "Viewership"), // 세관 묶음에 이미 있음 → 제외
+        };
+
+        var rows = LeftColumn.Build(Active, "bigmap", goals, finds: finds).Ready.Rows;
+
+        Assert.Equal(new[] { "a", "b", "z" }, rows.Select(r => r.QuestId)); // 낼 수 있는 게 없으니 전부 이름순
+        Assert.Equal("Find the letter", rows[0].Summary);
+        Assert.Equal("찾을 목표 2개", rows[1].Summary);
+        Assert.All(rows, r => Assert.False(r.HandInReady));
+    }
+
+    [Fact]
+    public void Finds_do_not_change_the_summary_of_quests_with_handovers()
+    {
+        var goals = new[] { Goal("a", "a1", ready: true, name: "Alpha", text: "Hand over the drive") };
+        var finds = new[] { Find("a", "a2", name: "Alpha") };
+
+        var row = LeftColumn.Build(Active, "bigmap", goals, finds: finds).Ready.Rows.Single();
+
+        Assert.Equal("Hand over the drive", row.Summary);
+        Assert.True(row.HandInReady);
+    }
+
+    [Fact]
+    public void Finds_without_goals_make_no_ready_section()
+    {
+        // 레이드 중에는 goals 가 null 이라 찾기만 있어도 "제출" 묶음을 만들지 않는다.
+        Assert.Null(LeftColumn.Build(Active, "bigmap", null, finds: new[] { Find("a", "a1") }).Ready);
+        Assert.Equal("a", LeftColumn.Build(Active, "bigmap", new HandoverGoal[0], finds: new[] { Find("a", "a1") }).Ready.Rows.Single().QuestId);
+    }
+
     [Fact]
     public void Ready_names_sort_in_the_response_language()
     {

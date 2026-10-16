@@ -123,9 +123,11 @@ public static class LeftColumn
     // goals 가 null 이면 레이드 중이라 건네주기 줄과 "제출" 묶음을 만들지 않는다.
     // objectives 가 null 이면 게임 목표를 못 읽은 것이라 펼침은 서버 목표로만 그린다.
     // turnIns 가 null 이면(레이드 중이거나 못 읽음) "완료 가능" 묶음이 없다.
+    // finds 는 남은 찾기 목표. 건네주기가 숨어 있는 퀘스트도 "제출" 묶음에 넣으려고 쓴다.
     public static LeftColumnModel Build(BriefingResponse response, string preferredKey,
         IReadOnlyList<HandoverGoal> goals = null, string expandedSection = null, string expandedQuestId = null,
-        IReadOnlyList<GameObjective> objectives = null, IReadOnlyList<TurnInQuest> turnIns = null, string raidMapKey = null)
+        IReadOnlyList<GameObjective> objectives = null, IReadOnlyList<TurnInQuest> turnIns = null, string raidMapKey = null,
+        IReadOnlyList<FindGoal> finds = null)
     {
         var selected = SelectedMap(response, preferredKey);
         var chips = response.Maps.Select(m => new MapChip(m.Key, m.Name, m.Count, m == selected, raidMapKey != null && m.Key == raidMapKey)).ToList();
@@ -147,7 +149,11 @@ public static class LeftColumn
         // 건네주기 쪽에서 예외가 나도 맵 묶음은 그린다.
         QuestSection ready = null;
         QuestDetailModel expanded = null;
-        try { ready = Ready(response, goals?.Where(g => !finished.Contains(g.QuestId)).ToList(), hereQuests, anywhereQuests); }
+        try
+        {
+            ready = Ready(response, goals?.Where(g => !finished.Contains(g.QuestId)).ToList(),
+                finds?.Where(f => f != null && !finished.Contains(f.QuestId)).ToList(), hereQuests, anywhereQuests);
+        }
         catch (Exception) { ready = null; }
         try { expanded = Expanded(hereQuests, anywhereQuests, here, anywhere, ready, turnIn, goals, objectives, expandedSection, expandedQuestId); }
         catch (Exception) { expanded = null; }
@@ -175,28 +181,47 @@ public static class LeftColumn
     }
 
     // 건네줄 목표가 남은 퀘스트 중 위의 두 묶음에 없는 것. 서버는 레이드 목표만 보내므로 건네주기만 남은 퀘스트는 여기서만 보인다.
+    // 건네주기는 찾기를 끝내야 보이는 퀘스트가 있어서, 찾기만 남은 퀘스트도 넣는다. 그런 퀘스트는 낼 수 있는 것이 없다.
     // 지금 낼 수 있는 퀘스트가 먼저, 그 안에서는 이름순. 요약은 남은 목표가 하나면 그 문장, 여럿이면 개수.
-    private static QuestSection Ready(BriefingResponse response, IReadOnlyList<HandoverGoal> goals,
+    // 건네주기가 하나라도 보이면 요약은 건네주기만 센다.
+    private static QuestSection Ready(BriefingResponse response, IReadOnlyList<HandoverGoal> goals, IReadOnlyList<FindGoal> finds,
         IEnumerable<BriefingQuest> here, IEnumerable<BriefingQuest> anywhere)
     {
         if (goals == null) return null;
         var shown = new HashSet<string>((here ?? Enumerable.Empty<BriefingQuest>()).Concat(anywhere).Select(q => q.QuestId));
         var names = NameOrder(response.Lang);
-        var rows = goals.Where(g => !shown.Contains(g.QuestId))
+        var handoverRows = goals.Where(g => !shown.Contains(g.QuestId))
             .GroupBy(g => g.QuestId)
             .Select(group =>
             {
                 var first = group.First();
                 var count = group.Count();
-                var row = Row(new BriefingQuest
+                return (Quest: new BriefingQuest
                 {
                     QuestId = first.QuestId,
                     TraderId = first.TraderId,
                     Name = first.QuestName,
                     Summary = count == 1 ? first.Text : Texts.HandoverCount(count),
-                }, response.Traders);
-                return (Row: row, AnyReady: group.Any(g => g.Ready));
+                }, AnyReady: group.Any(g => g.Ready));
             })
+            .ToList();
+        var listed = new HashSet<string>(handoverRows.Select(x => x.Quest.QuestId));
+        var findRows = (finds ?? new List<FindGoal>()).Where(f => !shown.Contains(f.QuestId) && !listed.Contains(f.QuestId))
+            .GroupBy(f => f.QuestId)
+            .Select(group =>
+            {
+                var first = group.First();
+                var count = group.Count();
+                return (Quest: new BriefingQuest
+                {
+                    QuestId = first.QuestId,
+                    TraderId = first.TraderId,
+                    Name = first.QuestName,
+                    Summary = count == 1 ? first.Text : Texts.FindCount(count),
+                }, AnyReady: false);
+            });
+        var rows = handoverRows.Concat(findRows)
+            .Select(x => (Row: Row(x.Quest, response.Traders), x.AnyReady))
             .OrderBy(x => x.AnyReady ? 0 : 1).ThenBy(x => x.Row.Name ?? "", names).ThenBy(x => x.Row.QuestId, StringComparer.Ordinal)
             .Select(x => WithHandIn(x.Row, x.AnyReady))
             .ToList();
