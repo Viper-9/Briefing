@@ -58,6 +58,9 @@ public static class Texts
     public static string HandoverCount(int count) => L($"건네줄 목표 {count}개",
         count == 1 ? "1 objective to hand over" : $"{count} objectives to hand over",
         $"Целей к передаче: {count}");
+    public static string FindCount(int count) => L($"찾을 목표 {count}개",
+        count == 1 ? "1 objective to find" : $"{count} objectives to find",
+        $"Целей к поиску: {count}");
     public static string Handover => L("건네주기", "Hand over", "Передать");
     public static string OpenInTasks => L("임무 탭에서 보기", "Show in Tasks", "Показать в заданиях");
     // "완료 가능" 묶음과 상인 임무 화면으로 가는 버튼

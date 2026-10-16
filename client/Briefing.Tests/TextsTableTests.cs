@@ -23,6 +23,8 @@ public class TextsTableTests
         yield return ("HereTitle", Texts.HereTitle("Customs"));
         yield return ("HandoverCount", Texts.HandoverCount(1));
         yield return ("HandoverCount", Texts.HandoverCount(3));
+        yield return ("FindCount", Texts.FindCount(1));
+        yield return ("FindCount", Texts.FindCount(3));
         yield return ("MoreItems", Texts.MoreItems(2));
         foreach (var level in new[] { -1, 0, 2 }) yield return ("FloorName", Texts.FloorName(level, null));
         yield return ("FloorName", Texts.FloorName(1, "deck"));
