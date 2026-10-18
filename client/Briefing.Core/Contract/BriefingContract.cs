@@ -56,7 +56,7 @@ public sealed class BriefingQuest
     public List<BriefingObjective> Objectives { get; set; } = new List<BriefingObjective>();
 }
 
-// 펼친 퀘스트의 목표 한 줄. 서버는 끝나지 않은 레이드 목표만 보낸다(제출·무기 조립·찾기는 없음).
+// 펼친 퀘스트의 목표 한 줄. 서버는 끝나지 않은 레이드 목표만 보낸다(제출·무기 조립은 없고, 찾기는 정해진 자리에 생기는 퀘스트 아이템만).
 // Current 는 Target 을 넘을 수 있다. InferredMap(목표 문장에서 맵을 추정했는지)은 읽기만 하고 화면에는 쓰지 않는다.
 public sealed class BriefingObjective
 {

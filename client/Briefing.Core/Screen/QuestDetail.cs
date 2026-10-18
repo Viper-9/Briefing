@@ -88,7 +88,7 @@ public static class QuestDetail
 
     // 임무 탭처럼 게임 순서대로 그린다. 끝난 목표는 Done.
     // 레이드 목표는 이 묶음의 서버 목표에 있을 때만 그린다(없으면 다른 맵 묶음 것).
-    // 제출은 goal 이 있으면(레이드 밖) 건네주기 줄, 없으면 Plain. 나머지도 Plain.
+    // 제출은 goal 이 있으면(레이드 밖) 건네주기 줄, 없으면 Plain. 나머지는 서버 목표에 있으면 목표 줄, 없으면 Plain.
     // 게임 목록에 없는 서버 목표는 원래 없어야 하지만 혹시 있으면 끝에 붙인다.
     private static List<DetailLine> FromGame(string questId, BriefingQuest quest, IReadOnlyList<HandoverGoal> goals,
         IReadOnlyList<GameObjective> objectives)
@@ -123,7 +123,10 @@ public static class QuestDetail
                             ready: goal.Ready, showButton: true));
                     break;
                 default:
-                    lines.Add(new DetailLine(DetailLineKind.Plain, questId, g.ConditionId, g.Text, items, progress));
+                    // 퀘스트 아이템 찾기처럼 서버가 레이드 목표로 보낸 것은 마커가 있는 목표 줄로 그린다.
+                    lines.Add(g.ConditionId != null && byId.TryGetValue(g.ConditionId, out var sent)
+                        ? Objective(questId, sent, quest.Marker, items)
+                        : new DetailLine(DetailLineKind.Plain, questId, g.ConditionId, g.Text, items, progress));
                     break;
             }
         }

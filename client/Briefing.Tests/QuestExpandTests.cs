@@ -355,6 +355,20 @@ public class QuestExpandTests
     }
 
     [Fact]
+    public void Find_sent_by_the_server_is_an_objective_line_with_marker()
+    {
+        // 정해진 자리에 생기는 퀘스트 아이템 찾기는 서버가 레이드 목표로 보낸다.
+        var objectives = new[] { Game("doc", GameObjectiveKind.Other, text: "Find the document"), Game("bolts", GameObjectiveKind.Other) };
+
+        var lines = QuestDetail.Build(LeftColumn.HereKey, "q", Contract("doc"), null, objectives).Lines;
+
+        Assert.Equal(new[] { DetailLineKind.Objective, DetailLineKind.Plain }, lines.Select(l => l.Kind));
+        Assert.Equal("contract doc", lines[0].Text);
+        Assert.Equal(3, lines[0].Marker);
+        Assert.Null(lines[1].Marker);
+    }
+
+    [Fact]
     public void Find_line_is_plain_with_item_names()
     {
         var objectives = new[] { Game("find", GameObjectiveKind.Other, text: "Find in raid", target: 3, items: new[] { "Fleece fabric" }) };
