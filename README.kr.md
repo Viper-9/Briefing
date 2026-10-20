@@ -25,6 +25,10 @@
 2. [Releases](../../releases)에서 원하는 버전의 `Briefing-<버전>.zip`을 다운로드합니다.
 3. 압축을 풀어 나오는 `BepInEx` 폴더를 SPT 설치 루트(`EscapeFromTarkov.exe`가 있는 폴더)에 그대로 덮어씁니다.
    (`BepInEx/plugins/Briefing/...` 구조)
+
+   `lib` 폴더에는 지도를 그리는 Unity Vector Graphics 라이브러리와 그것을 쓰는 Briefing 부분이 `.bin` 파일로 들어 있습니다.
+   확장자만 다른 일반 .NET 어셈블리라서 BepInEx 가 시작할 때 불러오지 않고, 게임에 Vector Graphics 가 없을 때만 Briefing 이 직접
+   불러옵니다(DynamicMaps 가 깔려 있으면 DynamicMaps 가 넣은 사본을 씁니다). 자세한 내용은 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)를 참고하세요.
 4. 서버와 게임을 재시작합니다.
 
 ## 여는 법

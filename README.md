@@ -25,6 +25,11 @@ exactly as QuestCodex reads them.
 2. Download `Briefing-<version>.zip` for the version you want from [Releases](../../releases).
 3. Extract it and overwrite the resulting `BepInEx` folder into your SPT install root (the folder containing
    `EscapeFromTarkov.exe`). (`BepInEx/plugins/Briefing/...` structure)
+
+   The `lib` folder holds Unity's Vector Graphics library (used to draw the map) and the part of Briefing that uses it,
+   as `.bin` files. They are regular .NET assemblies with a different extension, so BepInEx doesn't load them at startup;
+   Briefing loads them itself only if the game doesn't already have Vector Graphics (DynamicMaps installs its own copy,
+   and Briefing uses that one when it's there). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 4. Restart the server and the game.
 
 ## Opening it

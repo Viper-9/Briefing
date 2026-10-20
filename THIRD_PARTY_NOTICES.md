@@ -21,11 +21,31 @@ the game's own fonts. The LiberationSans font file itself is not shipped. Licens
 The TextMesh Pro Essential Resources in `unity/Assets/TextMesh Pro` are provided by Unity Technologies under the
 Unity Companion License. `briefing.bundle` includes the TextMesh Pro `TMP_SDF-Mobile` shader from them.
 
+## Unity Vector Graphics (Unity Companion License)
+
+`client/lib/Unity.VectorGraphics.dll` and `client/lib/Unity.InternalAPIEngineBridge.003.dll` are builds of Unity's
+`com.unity.vectorgraphics` package (2.0.0-preview series), copied byte for byte from the SPT-DynamicMaps release, which
+installs the same two files into `EscapeFromTarkov_Data/Managed`. They are not part of the base game. Briefing uses them to
+turn map SVGs into sprites.
+
+The release zip ships them as `BepInEx/plugins/Briefing/lib/Unity.VectorGraphics.bin` and
+`lib/Unity.InternalAPIEngineBridge.003.bin`, next to Briefing's own `lib/Briefing.Svg.bin`. The files are unchanged
+.NET assemblies; only the extension differs. BepInEx and FixPluginTypesSerialization preload every `.dll` under `plugins`
+at startup, so a `.dll` copy could take the place of the one DynamicMaps installs, and `Briefing.Svg` would break other mods'
+type scans if it were loaded without Vector Graphics present. Briefing loads these files itself the first time the map panel
+opens, and only when the game cannot already find Vector Graphics.
+
+Licensed under the Unity Companion License for Unity-dependent projects
+(http://www.unity3d.com/legal/licenses/Unity_Companion_License). Package license and third-party notices (LibTessDotNet under
+SGI Free Software License B 2.0, Clipper under the Boost Software License 1.0):
+[LICENSES/Unity-VectorGraphics-LICENSE.md](LICENSES/Unity-VectorGraphics-LICENSE.md),
+[LICENSES/Unity-VectorGraphics-Third-Party-Notices.md](LICENSES/Unity-VectorGraphics-Third-Party-Notices.md).
+
 ## SPT-DynamicMaps (MIT License)
 
 The map projection, floor selection and floor display rules in `client/Briefing.Core/Map/MapProjection.cs` are ported from
 SPT-DynamicMaps (`MapView`, `MapLayer`) by way of QuestCodex's `web/src/wiki/mapProjection.ts`, and the SVG rendering path in
-`client/Briefing.Client/Map/SvgSprites.cs` (import options, tessellation presets, vertex budget, sprite options) follows its `SvgUtils`.
+`client/Briefing.Svg/SvgSprites.cs` (import options, tessellation presets, vertex budget, sprite options) follows its `SvgUtils`.
 `client/Briefing.Tests/Fixtures/map.bigmap.json` is QuestCodex's conversion of SPT-DynamicMaps' map calibration data (commit 4944764),
 used as test data only. https://github.com/acidphantasm/SPT-DynamicMaps
 
