@@ -78,6 +78,8 @@ public static class Texts
     public static string MapLoading => L("지도를 불러오는 중...", "Loading map...", "Загрузка карты...");
     public static string MapNone => L("이 맵은 지도가 없습니다", "No map for this location", "Для этой локации нет карты");
     public static string MapLoadFailed => L("지도를 불러오지 못했습니다", "Couldn't load the map", "Не удалось загрузить карту");
+    // Unity.VectorGraphics 를 불러오지 못했을 때. 다른 기능은 그대로 쓴다.
+    public static string MapUnavailable => L("지도를 그릴 수 없습니다. BepInEx 로그를 확인해 주세요", "Can't draw maps. Check the BepInEx log", "Не удаётся отрисовать карту. Проверьте журнал BepInEx");
     public static string LayerExits => L("탈출구", "Extracts", "Выходы");
     public static string LayerDoors => L("잠긴 문", "Locked doors", "Запертые двери");
     public static string LayerAreas => L("퀘스트 구역", "Quest zones", "Зоны заданий");

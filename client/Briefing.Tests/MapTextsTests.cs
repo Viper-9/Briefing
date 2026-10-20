@@ -37,6 +37,7 @@ public class MapTextsTests
             Assert.Equal("지도를 불러오는 중...", Texts.MapLoading);
             Assert.Equal("이 맵은 지도가 없습니다", Texts.MapNone);
             Assert.Equal("지도를 불러오지 못했습니다", Texts.MapLoadFailed);
+            Assert.Equal("지도를 그릴 수 없습니다. BepInEx 로그를 확인해 주세요", Texts.MapUnavailable);
             Assert.Equal("탈출구", Texts.LayerExits);
             Assert.Equal("잠긴 문", Texts.LayerDoors);
             Assert.Equal("퀘스트 구역", Texts.LayerAreas);
@@ -44,6 +45,7 @@ public class MapTextsTests
             Assert.Equal("Loading map...", Texts.MapLoading);
             Assert.Equal("No map for this location", Texts.MapNone);
             Assert.Equal("Couldn't load the map", Texts.MapLoadFailed);
+            Assert.Equal("Can't draw maps. Check the BepInEx log", Texts.MapUnavailable);
             Assert.Equal("Extracts", Texts.LayerExits);
             Assert.Equal("Locked doors", Texts.LayerDoors);
             Assert.Equal("Quest zones", Texts.LayerAreas);
