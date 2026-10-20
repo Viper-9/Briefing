@@ -23,6 +23,8 @@ internal static class MapPrecache
     internal static void Start(BriefingResponse response, string currentFolder)
     {
         if (_started || response == null) return;
+        var svg = SvgLoader.Get();
+        if (svg == null) return; // 지도 칸이 안내 문구를 띄운다
         if (RaidInfo.InRaid())
         {
             if (!_deferred) Log.Info("map precache deferred: in raid");
@@ -35,7 +37,7 @@ internal static class MapPrecache
         try
         {
             var folders = MapPrecachePlan.Folders(response, currentFolder);
-            _ = RunAsync(folders);
+            _ = RunAsync(svg, folders);
         }
         catch (Exception e)
         {
@@ -59,7 +61,7 @@ internal static class MapPrecache
         Log.Info($"map precache paused for the raid after {sw.ElapsedMilliseconds} ms ({built} built) — resumes in the menu");
     }
 
-    private static async Task RunAsync(IReadOnlyList<string> folders)
+    private static async Task RunAsync(ISvgBackend svg, IReadOnlyList<string> folders)
     {
         var sw = Stopwatch.StartNew();
         int built = 0, skipped = 0, failed = 0;
@@ -87,14 +89,14 @@ internal static class MapPrecache
                         }
                         try
                         {
-                            if (SvgSprites.TryGet(folder, layer.Svg, out _))
+                            if (svg.TryGet(folder, layer.Svg, out _))
                             {
                                 skipped++;
                                 continue;
                             }
                             var text = await MapFiles.SvgAsync(folder, layer.Svg);
                             await Task.Yield(); // 층마다 적어도 한 프레임은 양보한다
-                            var sprite = text == null ? null : await SvgSprites.BuildAsync(folder, layer.Svg, text);
+                            var sprite = text == null ? null : await svg.BuildAsync(folder, layer.Svg, text);
                             if (sprite != null) built++;
                             else failed++; // 로그는 MapFiles·SvgSprites 가 남겼다
                         }

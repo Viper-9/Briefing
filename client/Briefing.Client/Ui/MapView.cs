@@ -7,14 +7,13 @@ using Briefing.Core.Map;
 using Briefing.Core.Screen;
 using Briefing.Map;
 using TMPro;
-using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Briefing.Ui;
 
-// 가운데 지도 칸. 고른 맵의 map.json 과 층 SVG 를 받아 층마다 SVGImage 를 겹친다.
+// 가운데 지도 칸. 고른 맵의 map.json 과 층 SVG 를 받아 층마다 SVGImage(Briefing.Svg 가 붙인다)를 겹친다.
 // 층 이미지는 지도 폴더가 바뀔 때만 다시 만들고, Render 는 층 모습, 층 버튼, 오버레이, 출처만 바꾼다.
 // Content 는 기본 층 viewBox 비율로 칸 안에 꽉 차게 놓고, 확대·이동은 그 위에 얹는다.
 internal sealed class MapView
@@ -42,7 +41,8 @@ internal sealed class MapView
     private readonly Toggle _areasToggle;
     private readonly MapOverlays _overlays;
     private readonly Action _onChanged;
-    private readonly List<(MapLayerDef Layer, SVGImage Image)> _images = new List<(MapLayerDef, SVGImage)>();
+    private readonly List<(MapLayerDef Layer, Graphic Image)> _images = new List<(MapLayerDef, Graphic)>();
+    private ISvgBackend _svg;     // Load 에서 받는다. null 이면 지도를 그리지 않는다
     private readonly List<GameObject> _floorButtons = new List<GameObject>();
     private string _folder;
     private MapDef _def;
@@ -316,6 +316,12 @@ internal sealed class MapView
         _layersTask = null;
         ClearMap();
         if (folder == null) return;
+        _svg = SvgLoader.Get();
+        if (_svg == null)
+        {
+            ShowMessage(Texts.MapUnavailable); // 다시 열어도 바뀌지 않으므로 Retry 할 것이 없다
+            return;
+        }
         ShowMessage(Texts.MapLoading);
         // 정의가 캐시돼 있으면 LoadAsync 가 여기서 바로 끝나고 부른 Render 가 이어서 그리므로 onChanged 를 부르지 않는다.
         _starting = true;
@@ -341,7 +347,7 @@ internal sealed class MapView
 
     private bool Stale(int load) => load != _load || _content == null; // 화면이 파괴됐으면 _content 가 Unity null
 
-    private bool Drawn(MapLayerDef layer) => _images.Any(x => x.Layer == layer && x.Image != null && x.Image.sprite != null);
+    private bool Drawn(MapLayerDef layer) => _images.Any(x => x.Layer == layer && x.Image != null && _svg.HasSprite(x.Image));
 
     private async Task LoadAsync(string folder, int load)
     {
@@ -384,11 +390,11 @@ internal sealed class MapView
         try
         {
             var order = MapPrecachePlan.LayerOrder(def).Where(l => !Drawn(l)).ToList();
-            var texts = order.Select(l => SvgSprites.TryGet(folder, l.Svg, out _) ? null : MapFiles.SvgAsync(folder, l.Svg)).ToList();
+            var texts = order.Select(l => _svg.TryGet(folder, l.Svg, out _) ? null : MapFiles.SvgAsync(folder, l.Svg)).ToList();
             for (var i = 0; i < order.Count; i++)
             {
                 var layer = order[i];
-                if (!SvgSprites.TryGet(folder, layer.Svg, out var sprite))
+                if (!_svg.TryGet(folder, layer.Svg, out var sprite))
                 {
                     var text = await texts[i];
                     await Task.Yield(); // 받은 프레임 말고 다음 프레임에 만든다
@@ -396,14 +402,14 @@ internal sealed class MapView
                     if (text != null)
                     {
                         // UiKit.Guard 로는 await 를 감쌀 수 없어 직접 잡는다.
-                        try { sprite = await SvgSprites.BuildAsync(folder, layer.Svg, text); }
+                        try { sprite = await _svg.BuildAsync(folder, layer.Svg, text); }
                         catch (Exception e) { Log.Error($"briefing map layer {folder}/{layer.Svg} failed: {e}"); }
                     }
                 }
                 if (Stale(load)) return;
                 var image = _images.FirstOrDefault(x => x.Layer == layer).Image;
                 if (sprite == null || image == null) continue; // 실패한 층은 비워 두고 층 버튼은 남긴다
-                image.sprite = sprite;
+                _svg.SetSprite(image, sprite);
                 image.enabled = true;
             }
             if (Stale(load) || def.Layers.Any(Drawn)) return;
@@ -447,7 +453,7 @@ internal sealed class MapView
         _zoom.SetActive(visible);
     }
 
-    private SVGImage CreateLayer(MapLayerDef layer)
+    private Graphic CreateLayer(MapLayerDef layer)
     {
         var go = new GameObject("Layer_" + layer.Level, typeof(RectTransform));
         go.layer = _layers.gameObject.layer;
@@ -456,11 +462,7 @@ internal sealed class MapView
         rt.anchorMin = Vector2.zero;
         rt.anchorMax = Vector2.one;
         rt.offsetMin = rt.offsetMax = Vector2.zero;
-        var image = go.AddComponent<SVGImage>();
-        image.raycastTarget = false;
-        image.preserveAspect = false; // 층마다 viewBox 가 조금 달라도 같은 칸에 늘인다(웹과 같다)
-        image.enabled = false;        // sprite 가 없으면 흰 사각형이 그려진다
-        return image;
+        return _svg.AddImage(go);
     }
 
     private void ApplyLevel(int level)

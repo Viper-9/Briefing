@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Unity.VectorGraphics;
 using UnityEngine;
 
-namespace Briefing.Map;
+namespace Briefing.Svg;
 
 // 층 SVG 를 Sprite 로. DynamicMaps 의 SvgUtils 와 같은 순서다(ilspycmd 로 확인).
 // ImportSVG 다음 TessellateScene 은 꼭짓점 65,500 을 넘지 않는 가장 고운 설정으로, 그다음 BuildSprite.
