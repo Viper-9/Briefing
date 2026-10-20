@@ -12,6 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Briefing.Core\Briefing.Core.csproj" />
+    <!-- AssemblyBoundaryTests 가 빌드된 DLL 의 메타데이터를 읽는다. 참조는 하지 않고 빌드 순서만 맞춘다 -->
+    <ProjectReference Include="..\Briefing.Svg\Briefing.Svg.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
