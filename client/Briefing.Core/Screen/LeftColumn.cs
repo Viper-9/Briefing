@@ -30,7 +30,7 @@ public sealed class MapChip
 // 화면이 그대로 찍는 값만 담는다. target 이 없으면 Progress·Fraction 은 null 이고 수치와 막대를 숨긴다.
 public sealed class QuestRow
 {
-    public QuestRow(string questId, string name, string summary, int? marker, string markerColor,
+    public QuestRow(string questId, string name, string summary, int? marker,
         string traderId, string traderName, string traderInitial, string progress, float? fraction, bool handInReady = false,
         bool kappa = false, bool lightkeeper = false)
     {
@@ -38,7 +38,6 @@ public sealed class QuestRow
         Name = name;
         Summary = summary;
         Marker = marker;
-        MarkerColor = markerColor;
         TraderId = traderId;
         TraderName = traderName;
         TraderInitial = traderInitial;
@@ -53,7 +52,6 @@ public sealed class QuestRow
     public string Name { get; }
     public string Summary { get; }
     public int? Marker { get; }
-    public string MarkerColor { get; }
     public string TraderId { get; }
     public string TraderName { get; }
     public string TraderInitial { get; }
@@ -292,15 +290,15 @@ public static class LeftColumn
         BriefingTrader trader = null;
         if (quest.TraderId != null) traders.TryGetValue(quest.TraderId, out trader);
         var traderName = trader?.Name;
-        return new QuestRow(quest.QuestId, quest.Name, quest.Summary, quest.Marker,
-            quest.Marker.HasValue ? MarkerPalette.Hex(quest.Marker.Value) : null,
+        var marker = quest.Marker > 0 ? quest.Marker : null; // 번호는 1부터다. 0 이하는 잘못 온 값이라 마커를 붙이지 않는다
+        return new QuestRow(quest.QuestId, quest.Name, quest.Summary, marker,
             quest.TraderId, traderName, Initial(traderName),
             ProgressText(quest.Current, quest.Target), Fraction(quest.Current, quest.Target),
             kappa: quest.Kappa, lightkeeper: quest.Lightkeeper);
     }
 
     private static QuestRow WithHandIn(QuestRow r, bool handInReady) =>
-        new QuestRow(r.QuestId, r.Name, r.Summary, r.Marker, r.MarkerColor, r.TraderId, r.TraderName, r.TraderInitial, r.Progress,
+        new QuestRow(r.QuestId, r.Name, r.Summary, r.Marker, r.TraderId, r.TraderName, r.TraderInitial, r.Progress,
             r.Fraction, handInReady, r.Kappa, r.Lightkeeper);
 
     public static string ProgressText(double? current, double? target) =>

@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using Briefing.Core.Screen;
 using Briefing.Game;
 using TMPro;
@@ -35,7 +34,7 @@ internal sealed class QuestDetailView
         var objective = UiKit.Child(d, UiPaths.ObjectiveTemplate);
         UiKit.Get<Image>(objective, UiPaths.ObjectiveMarker);
         UiKit.Get<Image>(objective, UiPaths.ObjectiveCheck);
-        foreach (var p in new[] { UiPaths.ObjectiveMarkerNumber, UiPaths.ObjectiveText, UiPaths.ObjectiveItems, UiPaths.ObjectiveValue })
+        foreach (var p in new[] { UiPaths.ObjectiveText, UiPaths.ObjectiveItems, UiPaths.ObjectiveValue })
             UiKit.Get<TMP_Text>(objective, p);
         var handover = UiKit.Child(d, UiPaths.HandoverTemplate);
         UiKit.Get<Image>(handover, UiPaths.HandoverCheck);
@@ -136,13 +135,10 @@ internal sealed class QuestDetailView
             value.color = items.color;
         }
 
-        // 원이 없는 줄도 자리는 남겨 글 시작 위치를 맞춘다.
-        var marker = UiKit.Get<Image>(t, UiPaths.ObjectiveMarker);
-        var number = UiKit.Get<TMP_Text>(t, UiPaths.ObjectiveMarkerNumber);
-        var show = !done && line.Marker.HasValue && line.MarkerColor != null;
-        marker.gameObject.SetActive(true);
-        marker.color = show ? UiKit.Hex(line.MarkerColor) : Color.clear;
-        number.text = show ? line.Marker.Value.ToString(CultureInfo.InvariantCulture) : "";
+        // 지도에 있는 목표만 핀을 보이고, 핀이 없는 줄도 자리는 남겨 글 시작 위치를 맞춘다.
+        var pin = UiKit.Get<Image>(t, UiPaths.ObjectiveMarker);
+        pin.gameObject.SetActive(true);
+        pin.color = !done && line.Marker.HasValue ? MarkerTone.Ink : Color.clear;
         UiKit.Get<Image>(t, UiPaths.ObjectiveCheck).gameObject.SetActive(done);
 
         go.SetActive(true);

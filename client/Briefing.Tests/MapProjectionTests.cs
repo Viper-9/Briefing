@@ -7,7 +7,7 @@ namespace Briefing.Tests;
 
 // QuestCodex web/src/wiki/mapProjection.test.ts 의 사례를 같은 기대값으로 옮겼다. describe 이름을 주석으로 남긴다.
 // 맵 정의 묶기, internalNames 대조, exitsForTab·doorsForTab, applyMapVariants 앞 세 사례는 서버가 하는 일이라 옮기지 않았다.
-// objectiveColor 는 LeftColumnTests 의 MarkerPalette 사례에 있다.
+// objectiveColor 는 옮기지 않았다. 마커는 퀘스트마다 색을 나누지 않고 한 가지 톤으로 그린다.
 public class MapProjectionTests
 {
     private static readonly MapDef Customs = FixtureFiles.LoadMap("bigmap");

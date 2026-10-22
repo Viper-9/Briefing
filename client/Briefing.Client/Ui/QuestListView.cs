@@ -30,8 +30,8 @@ internal sealed class QuestListView
     private readonly Action<string> _onHot;
     private readonly Color _rowColor;
     private readonly List<GameObject> _rows = new List<GameObject>();
-    private readonly Dictionary<string, (Image Bg, Color Base, bool Selected)> _hereRows =
-        new Dictionary<string, (Image, Color, bool)>();                                                  // questId 별 맵 묶음 줄 바탕
+    private readonly Dictionary<string, (Image Bg, Color Base, bool Selected, Transform Row)> _hereRows =
+        new Dictionary<string, (Image, Color, bool, Transform)>();                                       // questId 별 맵 묶음 줄
     private readonly Dictionary<(string, string), RectTransform> _rowsByKey = new Dictionary<(string, string), RectTransform>(); // (묶음, questId)
 
     private static readonly Color RowHot = UiKit.Hex("#2b3030");
@@ -56,8 +56,8 @@ internal sealed class QuestListView
         var q = _questTemplate.transform;
         foreach (var p in new[] { UiPaths.QuestInitial, UiPaths.QuestMarkerNumber, UiPaths.QuestName, UiPaths.QuestSummary, UiPaths.QuestValue })
             UiKit.Get<TMP_Text>(q, p);
-        foreach (var p in new[] { UiPaths.QuestFace, UiPaths.QuestMarker, UiPaths.QuestBar, UiPaths.QuestHandIcon, UiPaths.QuestBadges,
-                     UiPaths.QuestBadgeKappa, UiPaths.QuestBadgeLightkeeper })
+        foreach (var p in new[] { UiPaths.QuestFace, UiPaths.QuestMarkerFill, UiPaths.QuestMarkerRing, UiPaths.QuestBar, UiPaths.QuestHandIcon,
+                     UiPaths.QuestBadges, UiPaths.QuestBadgeKappa, UiPaths.QuestBadgeLightkeeper })
             UiKit.Get<Image>(q, p);
         UiKit.Child(q, UiPaths.QuestFill);
         if (_questTemplate.GetComponent<Button>() == null) throw new InvalidOperationException($"{UiPaths.QuestTemplate} has no Button");
@@ -108,6 +108,22 @@ internal sealed class QuestListView
     {
         foreach (var kv in _hereRows)
             if (kv.Value.Bg != null) kv.Value.Bg.color = kv.Key == questId && !kv.Value.Selected ? RowHot : kv.Value.Base; // 펼친 줄은 원래 바탕 그대로
+        LightMarkers(questId);
+    }
+
+    // 지도에서 강조되는 퀘스트(마우스를 올린 것)와 펼친 줄의 번호를 채워 지도 마커와 같은 모양으로 맞춘다.
+    private void LightMarkers(string hotQuestId)
+    {
+        foreach (var kv in _hereRows)
+            if (kv.Value.Row != null) PaintMarker(kv.Value.Row, kv.Value.Selected || kv.Key == hotQuestId);
+    }
+
+    // 강조되면 선택 줄 색으로 채우고 테두리와 번호를 어둡게, 아니면 테두리와 번호만 밝게 그린다.
+    private static void PaintMarker(Transform row, bool lit)
+    {
+        UiKit.Get<Image>(row, UiPaths.QuestMarkerFill).color = lit ? MarkerTone.LitFill : Color.clear;
+        UiKit.Get<Image>(row, UiPaths.QuestMarkerRing).color = lit ? MarkerTone.Dark : MarkerTone.Ink;
+        UiKit.Get<TMP_Text>(row, UiPaths.QuestMarkerNumber).color = lit ? MarkerTone.LitText : MarkerTone.Ink;
     }
 
     // 그 줄이 보일 만큼만 스크롤한다. Render 바로 뒤에 부른다.
@@ -166,10 +182,18 @@ internal sealed class QuestListView
         bg.color = baseColor;
         if (sectionKey == LeftColumn.HereKey)
         {
-            _hereRows[questId] = (bg, baseColor, selected);
+            _hereRows[questId] = (bg, baseColor, selected, t);
             var relay = go.AddComponent<HoverRelay>(); // 지도 강조용. 클릭은 Button 이 받는다
-            relay.Enter = () => _onHot(questId);
-            relay.Exit = () => _onHot(null);
+            relay.Enter = () =>
+            {
+                _onHot(questId);
+                LightMarkers(questId);
+            };
+            relay.Exit = () =>
+            {
+                _onHot(null);
+                LightMarkers(null);
+            };
         }
         UiKit.Get<TMP_Text>(t, UiPaths.QuestName).text = row.Name ?? "";
         // 그림을 못 구하면 손 아이콘만 꺼 둔다.
@@ -186,13 +210,11 @@ internal sealed class QuestListView
             });
         UiKit.Get<TMP_Text>(t, UiPaths.QuestSummary).text = row.Summary ?? "";
 
-        var marker = UiKit.Get<Image>(t, UiPaths.QuestMarker);
-        var showMarker = row.Marker.HasValue && row.MarkerColor != null; // 번호가 0 이하라 색이 없으면 숨긴다
-        marker.gameObject.SetActive(showMarker);
-        if (showMarker)
+        UiKit.Child(t, UiPaths.QuestMarker).gameObject.SetActive(row.Marker.HasValue);
+        if (row.Marker.HasValue)
         {
-            marker.color = UiKit.Hex(row.MarkerColor);
             UiKit.Get<TMP_Text>(t, UiPaths.QuestMarkerNumber).text = row.Marker.Value.ToString(CultureInfo.InvariantCulture);
+            PaintMarker(t, selected);
         }
 
         var value = UiKit.Get<TMP_Text>(t, UiPaths.QuestValue);
