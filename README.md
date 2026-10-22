@@ -53,7 +53,8 @@ to look at the map and its extracts.
 
 - Quests to do **on this map**, plus an **Any map** group for quests that work anywhere, with the trader's face,
   an objective summary, progress numbers and a bar.
-- The number badge (①②③…) next to a map quest matches the marker number and colour on the map.
+- The number badge (①②③…) next to a map quest matches the marker number on the map. Pointing at a quest or
+  expanding it highlights its badge and markers together.
 - Outside a raid two more groups appear:
   - **Ready to turn in**: at the top. Quests that only need a report to the trader.
   - **Hand in**: quests with item hand-over objectives left. Quests you can hand in right now get a light blue hand
@@ -83,7 +84,7 @@ Click a quest row to expand its objectives in game order, with the target item n
 - Quest markers, quest zones, extracts and locked doors on one map. Hover an extract or a locked door to see its
   name, conditions or key.
 - Toggle **Extracts (PMC / Scav / Transit) · Locked doors · Quest zones** with the checkboxes at the top.
-- Switch floors with the floor buttons. A floor button gets a red dot when another floor has quest markers.
+- Switch floors with the floor buttons. A floor button gets a dot when another floor has quest markers.
 - Wheel to zoom, drag to pan, double-click to reset, or use the `+` / `−` buttons.
 - Hovering a quest row highlights only its markers, and clicking a map marker jumps to that quest in the list.
 - The map is QuestCodex's SVG, drawn inside the game. After the first map opens, the other maps are prepared in the
