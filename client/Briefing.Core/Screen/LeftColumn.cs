@@ -31,7 +31,8 @@ public sealed class MapChip
 public sealed class QuestRow
 {
     public QuestRow(string questId, string name, string summary, int? marker, string markerColor,
-        string traderId, string traderName, string traderInitial, string progress, float? fraction, bool handInReady = false)
+        string traderId, string traderName, string traderInitial, string progress, float? fraction, bool handInReady = false,
+        bool kappa = false, bool lightkeeper = false)
     {
         QuestId = questId;
         Name = name;
@@ -44,6 +45,8 @@ public sealed class QuestRow
         Progress = progress;
         Fraction = fraction;
         HandInReady = handInReady;
+        Kappa = kappa;
+        Lightkeeper = lightkeeper;
     }
 
     public string QuestId { get; }
@@ -58,6 +61,9 @@ public sealed class QuestRow
     public float? Fraction { get; }
     // 지금 건네줄 수 있는 목표가 있으면 이름 옆에 손 아이콘을 붙인다.
     public bool HandInReady { get; }
+    // 카파·등대지기 해금 선행이면 상인 얼굴 모서리에 배지를 붙인다.
+    public bool Kappa { get; }
+    public bool Lightkeeper { get; }
 }
 
 // 접히는 묶음 하나("세관에서 진행", "아무 맵에서나" 등). EmptyText 는 줄이 없을 때만 값이 있다.
@@ -165,16 +171,17 @@ public static class LeftColumn
     {
         if (turnIns == null) return null;
         var names = NameOrder(response.Lang);
+        var known = new GoalIds(response);
         var rows = turnIns.Where(t => t?.QuestId != null)
             .GroupBy(t => t.QuestId)
             .Select(group => group.First())
-            .Select(t => Row(new BriefingQuest
+            .Select(t => Row(WithGoals(new BriefingQuest
             {
                 QuestId = t.QuestId,
                 TraderId = t.TraderId,
                 Name = t.QuestName,
                 Summary = Texts.TurnInSummary,
-            }, response.Traders))
+            }, known), response.Traders))
             .OrderBy(r => r.Name ?? "", names).ThenBy(r => r.QuestId, StringComparer.Ordinal)
             .ToList();
         return rows.Count == 0 ? null : new QuestSection(TurnInKey, Texts.TurnInTitle, rows, null);
@@ -190,6 +197,7 @@ public static class LeftColumn
         if (goals == null) return null;
         var shown = new HashSet<string>((here ?? Enumerable.Empty<BriefingQuest>()).Concat(anywhere).Select(q => q.QuestId));
         var names = NameOrder(response.Lang);
+        var known = new GoalIds(response);
         var handoverRows = goals.Where(g => !shown.Contains(g.QuestId))
             .GroupBy(g => g.QuestId)
             .Select(group =>
@@ -221,7 +229,7 @@ public static class LeftColumn
                 }, AnyReady: false);
             });
         var rows = handoverRows.Concat(findRows)
-            .Select(x => (Row: Row(x.Quest, response.Traders), x.AnyReady))
+            .Select(x => (Row: Row(WithGoals(x.Quest, known), response.Traders), x.AnyReady))
             .OrderBy(x => x.AnyReady ? 0 : 1).ThenBy(x => x.Row.Name ?? "", names).ThenBy(x => x.Row.QuestId, StringComparer.Ordinal)
             .Select(x => WithHandIn(x.Row, x.AnyReady))
             .ToList();
@@ -237,9 +245,37 @@ public static class LeftColumn
         var target = new[] { turnIn, here, anywhere, ready }.FirstOrDefault(s => s != null && s.Key == section);
         if (target == null || target.Rows.All(r => r.QuestId != questId)) return null;
         var source = section == HereKey ? hereQuests : section == AnywhereKey ? anywhereQuests : null;
+        var row = target.Rows.First(r => r.QuestId == questId);
         // "완료 가능" 묶음은 서버 퀘스트 없이 게임 목표만 그리고 "완료하러 가기" 버튼을 켠다.
         return QuestDetail.Build(section, questId, source?.FirstOrDefault(q => q.QuestId == questId), goals, objectives,
-            canTurnIn: section == TurnInKey);
+            canTurnIn: section == TurnInKey).WithGoals(row.Kappa, row.Lightkeeper);
+    }
+
+    // 카파·등대지기 해금 선행 퀘스트 id. 응답 맨 위 목록에 퀘스트마다 붙은 표시를 더한다(목록이 없는 QuestCodex 대비).
+    private sealed class GoalIds
+    {
+        internal readonly HashSet<string> Kappa;
+        internal readonly HashSet<string> Lightkeeper;
+
+        internal GoalIds(BriefingResponse response)
+        {
+            Kappa = new HashSet<string>(response.KappaQuests.Where(id => id != null), StringComparer.Ordinal);
+            Lightkeeper = new HashSet<string>(response.LightkeeperQuests.Where(id => id != null), StringComparer.Ordinal);
+            foreach (var q in response.Maps.SelectMany(m => m.Quests).Concat(response.Anywhere.Quests))
+            {
+                if (q?.QuestId == null) continue;
+                if (q.Kappa) Kappa.Add(q.QuestId);
+                if (q.Lightkeeper) Lightkeeper.Add(q.QuestId);
+            }
+        }
+    }
+
+    // 게임에서 만든 퀘스트("제출"·"완료 가능")는 응답에 없을 수 있어 id 목록으로 표시를 정한다.
+    private static BriefingQuest WithGoals(BriefingQuest quest, GoalIds known)
+    {
+        quest.Kappa = known.Kappa.Contains(quest.QuestId);
+        quest.Lightkeeper = known.Lightkeeper.Contains(quest.QuestId);
+        return quest;
     }
 
     // 서버가 이름을 정렬할 때와 같은 문화권. 못 만들면 Invariant.
@@ -259,12 +295,13 @@ public static class LeftColumn
         return new QuestRow(quest.QuestId, quest.Name, quest.Summary, quest.Marker,
             quest.Marker.HasValue ? MarkerPalette.Hex(quest.Marker.Value) : null,
             quest.TraderId, traderName, Initial(traderName),
-            ProgressText(quest.Current, quest.Target), Fraction(quest.Current, quest.Target));
+            ProgressText(quest.Current, quest.Target), Fraction(quest.Current, quest.Target),
+            kappa: quest.Kappa, lightkeeper: quest.Lightkeeper);
     }
 
     private static QuestRow WithHandIn(QuestRow r, bool handInReady) =>
         new QuestRow(r.QuestId, r.Name, r.Summary, r.Marker, r.MarkerColor, r.TraderId, r.TraderName, r.TraderInitial, r.Progress,
-            r.Fraction, handInReady);
+            r.Fraction, handInReady, r.Kappa, r.Lightkeeper);
 
     public static string ProgressText(double? current, double? target) =>
         target == null ? null : $"{Number(current ?? 0)} / {Number(target.Value)}";
