@@ -33,7 +33,6 @@ public class QuestExpandTests
         Assert.Equal("Eliminate any target inside the industrial plant on Customs ×15", line.Text);
         Assert.Equal("6 / 15", line.Progress);
         Assert.Equal(1, line.Marker);
-        Assert.Equal("#ff8c42", line.MarkerColor);
         Assert.Null(line.Items);
     }
 
@@ -45,7 +44,6 @@ public class QuestExpandTests
         Assert.Equal(4, d.Lines.Count);
         Assert.Equal("Stash the AK-50 body at the specified spot on Customs ×1", d.Lines[0].Text);
         Assert.All(d.Lines, o => Assert.Equal(4, o.Marker));
-        Assert.All(d.Lines, o => Assert.Equal("#facc15", o.MarkerColor));
         Assert.All(d.Lines, o => Assert.Equal("0 / 1", o.Progress));
     }
 
@@ -57,7 +55,6 @@ public class QuestExpandTests
         Assert.Equal(LeftColumn.AnywhereKey, d.SectionKey);
         var line = d.Lines.Single();          // 아무 맵에서나 쪽 목표 1개
         Assert.Null(line.Marker);             // 아무 맵에서나는 마커가 없다
-        Assert.Null(line.MarkerColor);
     }
 
     [Fact]
@@ -67,6 +64,18 @@ public class QuestExpandTests
 
         Assert.Null(line.Marker);
         Assert.Equal("4 / 5", line.Progress);
+    }
+
+    [Fact]
+    public void Objective_lines_have_no_marker_when_the_quest_number_is_below_one()
+    {
+        var quest = new BriefingQuest
+        {
+            QuestId = "q", Marker = 0,
+            Objectives = { new BriefingObjective { Text = "placed", Target = 1, Locations = { new BriefingLocation { Map = "bigmap", Points = { new BriefingPoint() } } } } },
+        };
+
+        Assert.Null(QuestDetail.Build(LeftColumn.HereKey, "q", quest, null).Lines.Single().Marker);
     }
 
     [Fact]
@@ -86,7 +95,6 @@ public class QuestExpandTests
         var lines = QuestDetail.Build(LeftColumn.HereKey, "q", quest, null).Lines;
 
         Assert.Equal(new int?[] { 2, 2, null }, lines.Select(l => l.Marker));
-        Assert.Equal(new[] { "#2ec4b6", "#2ec4b6", null }, lines.Select(l => l.MarkerColor));
         Assert.Null(lines[0].Progress);       // target null → 수치 숨김
         Assert.Equal("5 / 3", lines[1].Progress); // 목표 current 는 원값
     }
@@ -312,7 +320,6 @@ public class QuestExpandTests
         Assert.Equal("contract kill", lines[1].Text);
         Assert.Equal("1 / 4", lines[1].Progress);
         Assert.Equal(3, lines[1].Marker);
-        Assert.Equal(MarkerPalette.Hex(3), lines[1].MarkerColor);
         // 그 밖의 줄은 게임 문구·게임 수치, 마커 없음
         Assert.Equal("Find flash drives", lines[0].Text);
         Assert.Equal("1 / 2", lines[0].Progress);
@@ -588,7 +595,6 @@ public class QuestExpandTests
         {
             Assert.Equal("상인에게 보고하면 완료", r.Summary);
             Assert.Null(r.Marker);
-            Assert.Null(r.MarkerColor);
             Assert.Null(r.Progress);
             Assert.Null(r.Fraction);
         });

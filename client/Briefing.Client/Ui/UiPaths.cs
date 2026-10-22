@@ -46,7 +46,9 @@ internal static class UiPaths
     internal const string QuestBadges = "Trader/Badges"; // 카파·등대지기 해금 선행 배지, 처음엔 꺼져 있다
     internal const string QuestBadgeKappa = "Trader/Badges/Kappa";
     internal const string QuestBadgeLightkeeper = "Trader/Badges/Lightkeeper";
-    internal const string QuestMarker = "Body/Title/Marker";
+    internal const string QuestMarker = "Body/Title/Marker";            // 지도 번호. 자리만 잡고 채움, 테두리, 번호는 자식이다
+    internal const string QuestMarkerFill = "Body/Title/Marker/Fill";   // 강조될 때만 채운다
+    internal const string QuestMarkerRing = "Body/Title/Marker/Ring";
     internal const string QuestMarkerNumber = "Body/Title/Marker/Number";
     internal const string QuestName = "Body/Title/Name";
     internal const string QuestHandIcon = "Body/Title/HandIcon"; // 처음엔 꺼져 있다
@@ -67,9 +69,8 @@ internal static class UiPaths
     internal const string TurnInLabel = "Actions/TurnIn/Label";
     internal const string OpenTasks = "Actions/OpenTasks";
     internal const string OpenTasksLabel = "Actions/OpenTasks/Label";
-    // 목표 줄 안(줄 기준). 건네주기 버튼이 없는 줄은 모두 이것을 쓴다.
+    // 목표 줄 안(줄 기준). 건네주기 버튼이 없는 줄은 모두 이것을 쓴다. Marker 는 지도에 있는 목표의 핀이다.
     internal const string ObjectiveMarker = "Marker";
-    internal const string ObjectiveMarkerNumber = "Marker/Number";
     internal const string ObjectiveCheck = "Marker/Check";
     internal const string ObjectiveText = "Main/Text";
     internal const string ObjectiveItems = "Main/Items";
@@ -93,7 +94,7 @@ internal static class UiPaths
     internal const string ExitTemplate = MapExits + "/ExitTemplate";
     internal const string MapMarkers = MapContent + "/Markers";
     internal const string MarkerTemplate = MapMarkers + "/MarkerTemplate";
-    // 마커 안(마커 기준). 마커 자체 Image 는 테두리 고리, Fill 은 퀘스트 색 원.
+    // 마커 안(마커 기준). 마커 자체 Image 는 테두리 고리, Fill 은 그 안의 원.
     internal const string MarkerFill = "Fill";
     internal const string MarkerNumber = "Number";
     internal const string MapFloors = "Columns/ColMap/Floors";

@@ -49,6 +49,18 @@ public class MapSceneTests
     }
 
     [Fact]
+    public void Quests_numbered_below_one_have_no_markers()
+    {
+        var place = new BriefingLocation { Map = "bigmap", Points = { new BriefingPoint() }, Areas = { new BriefingArea { Center = new BriefingPoint(), SizeX = 10, SizeZ = 10 } } };
+        var map = new BriefingMap { Key = "bigmap", Quests = { new BriefingQuest { QuestId = "q", Marker = 0, Objectives = { new BriefingObjective { Locations = { place } } } } } };
+
+        var set = MapScene.Markers(map, null);
+
+        Assert.Empty(set.Markers);
+        Assert.Empty(set.Areas);
+    }
+
+    [Fact]
     public void Markers_skip_quests_not_shown_in_the_map_section()
     {
         var set = MapScene.Markers(Bigmap, new HashSet<string> { Viewership, Hobby });
@@ -58,13 +70,12 @@ public class MapSceneTests
     }
 
     [Fact]
-    public void Default_level_shows_ground_markers_with_marker_colors()
+    public void Default_level_shows_ground_markers()
     {
         var s = Scene();
 
         Assert.Equal(0, s.Level);
         Assert.Equal(new[] { 1, 2, 4 }, s.Markers.Select(m => m.N)); // 3 은 3층
-        Assert.Equal(new[] { "#ff8c42", "#2ec4b6", "#facc15" }, s.Markers.Select(m => m.Color));
         Assert.Equal(0.3940, s.Markers[0].At.U, 4);
         Assert.Equal(0.4814, s.Markers[0].At.V, 4);
         Assert.All(s.Markers, m => Assert.Equal(Emphasis.Normal, m.Emphasis));
@@ -116,7 +127,6 @@ public class MapSceneTests
         Assert.Equal(new[] { 2, 1 }, areas.Select(a => a.N)); // 40×75 이 31.94×73.07 보다 넓다
         Assert.All(areas, a => Assert.Equal(4, a.Polygon.Count));
         Assert.All(areas.SelectMany(a => a.Polygon), p => Assert.InRange(p.U, 0, 1));
-        Assert.Equal(MarkerPalette.Hex(2), areas[0].Color);
         Assert.Empty(Scene(-1).Areas);
         Assert.Empty(Scene(areas: false).Areas);
     }

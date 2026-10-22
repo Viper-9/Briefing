@@ -5,20 +5,18 @@ using UnityEngine.UI;
 
 namespace Briefing.Ui;
 
-// 퀘스트 구역 사각형. 웹 .qc-map__area 처럼 퀘스트 색에 검정을 섞은 반투명 채움과 퀘스트 색 테두리를 그린다.
+// 퀘스트 구역 사각형. 마커와 같은 톤의 옅은 채움과 테두리를 그리고, 강조되면 선택 줄 색으로 진하게 그린다.
 // 테두리는 확대해도 화면에서 같은 두께로 보이게 배율로 나눈다. 웹의 점선 대신 실선이고, 마우스는 받지 않는다.
 internal sealed class AreaGraphic : MaskableGraphic
 {
     private readonly List<Vector2> _corners = new List<Vector2>();
-    private Color _tone = Color.white;
     private Emphasis _look;
     private float _scale = 1f;
 
-    internal void Set(IReadOnlyList<MapUv> polygon, Color tone)
+    internal void Set(IReadOnlyList<MapUv> polygon)
     {
         _corners.Clear();
         foreach (var p in polygon) _corners.Add(new Vector2((float)p.U, (float)p.V));
-        _tone = tone;
         raycastTarget = false;
         SetVerticesDirty();
     }
@@ -44,18 +42,20 @@ internal sealed class AreaGraphic : MaskableGraphic
         var points = new List<Vector2>(_corners.Count);
         foreach (var c in _corners) points.Add(new Vector2(r.xMin + c.x * r.width, r.yMax - c.y * r.height));
 
+        var hot = _look == Emphasis.Hot;
         var alpha = _look == Emphasis.Dim ? 0.25f : 1f;
-        var fill = Color.Lerp(Color.black, _tone, 0.35f);
-        fill.a = (_look == Emphasis.Hot ? 0.45f : 0.3f) * alpha;
-        var stroke = _tone;
-        stroke.a = alpha;
+        var tone = hot ? MarkerTone.LitFill : MarkerTone.Ink;
+        var fill = tone;
+        fill.a = (hot ? 0.3f : 0.08f) * alpha;
+        var stroke = tone;
+        stroke.a = (hot ? 1f : 0.8f) * alpha;
 
         // 볼록 사각형이라 한 꼭짓점에서 부채꼴로 나누면 된다.
         foreach (var p in points) vh.AddVert(p, fill, Vector2.zero);
         for (var i = 1; i < points.Count - 1; i++) vh.AddTriangle(0, i, i + 1);
 
         // 테두리는 변마다 얇은 사각형으로.
-        var half = (_look == Emphasis.Hot ? 3f : 2.25f) / 2f / _scale;
+        var half = (hot ? 3f : 2f) / 2f / _scale;
         for (var i = 0; i < points.Count; i++)
         {
             var a = points[i];

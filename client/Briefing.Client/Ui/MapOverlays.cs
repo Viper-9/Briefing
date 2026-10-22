@@ -24,7 +24,6 @@ internal sealed class MapOverlays
     private readonly GameObject _doorTemplate;
     private readonly GameObject _exitTemplate;
     private readonly GameObject _markerTemplate;
-    private readonly Color _ring;
     private readonly RectTransform _tip;
     private readonly TMP_Text _tipTitle;
     private readonly TMP_Text _tipDetail;
@@ -33,7 +32,8 @@ internal sealed class MapOverlays
     private readonly Action<string> _onClick;
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private readonly List<RectTransform> _icons = new List<RectTransform>();          // 배율로 나눠 크기를 지키는 것
-    private readonly List<(GameObject Go, Image Ring, CanvasGroup Group)> _markerViews = new List<(GameObject, Image, CanvasGroup)>();
+    private readonly List<(GameObject Go, Image Ring, Image Fill, TMP_Text Number, CanvasGroup Group)> _markerViews =
+        new List<(GameObject, Image, Image, TMP_Text, CanvasGroup)>();
     private readonly List<AreaGraphic> _areaViews = new List<AreaGraphic>();
     private string _signature;
     private double _scale = 1;
@@ -53,7 +53,6 @@ internal sealed class MapOverlays
         _doorTemplate = Template(screenRoot, UiPaths.DoorTemplate);
         _exitTemplate = Template(screenRoot, UiPaths.ExitTemplate);
         _markerTemplate = Template(screenRoot, UiPaths.MarkerTemplate);
-        _ring = _markerTemplate.GetComponent<Image>().color;
         UiKit.Get<Image>(_markerTemplate.transform, UiPaths.MarkerFill);
         UiKit.Get<TMP_Text>(_markerTemplate.transform, UiPaths.MarkerNumber);
         _tip = (RectTransform)UiKit.Child(screenRoot, UiPaths.MapTooltip);
@@ -141,12 +140,16 @@ internal sealed class MapOverlays
         {
             for (var i = 0; i < _markerViews.Count; i++)
             {
-                var (go, ring, group) = _markerViews[i];
+                var (go, ring, fill, number, group) = _markerViews[i];
                 if (go == null) continue;
                 var look = scene.Markers[i].Emphasis;
-                ring.color = look == Emphasis.Hot ? Color.white : _ring;
+                // 강조한 마커는 펼친 줄처럼 선택 줄 색으로 채우고 테두리와 번호를 어둡게 뒤집는다.
+                var lit = look == Emphasis.Hot;
+                ring.color = lit ? MarkerTone.Dark : MarkerTone.Ink;
+                fill.color = lit ? MarkerTone.LitFill : MarkerTone.Dark;
+                number.color = lit ? MarkerTone.LitText : MarkerTone.Ink;
                 group.alpha = look == Emphasis.Dim ? DimMarkerAlpha : 1f;
-                if (look == Emphasis.Hot) go.transform.SetAsLastSibling(); // 강조한 마커를 맨 위로
+                if (lit) go.transform.SetAsLastSibling(); // 강조한 마커를 맨 위로
             }
         }
         if (scene.Areas.Count == _areaViews.Count)
@@ -175,7 +178,7 @@ internal sealed class MapOverlays
         rt.anchorMax = Vector2.one;
         rt.offsetMin = rt.offsetMax = Vector2.zero;
         var g = go.AddComponent<AreaGraphic>();
-        g.Set(a.Polygon, UiKit.Hex(a.Color));
+        g.Set(a.Polygon);
         g.SetScale(_scale);
         _areaViews.Add(g);
     }
@@ -201,10 +204,10 @@ internal sealed class MapOverlays
     private void AddMarker(MarkerDraw m)
     {
         var go = Spawn(_markerTemplate, _markers, "Marker_" + m.N, m.At);
-        UiKit.Get<Image>(go.transform, UiPaths.MarkerFill).color = UiKit.Hex(m.Color);
-        UiKit.Get<TMP_Text>(go.transform, UiPaths.MarkerNumber).text = m.N.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var number = UiKit.Get<TMP_Text>(go.transform, UiPaths.MarkerNumber);
+        number.text = m.N.ToString(System.Globalization.CultureInfo.InvariantCulture);
         var group = go.AddComponent<CanvasGroup>(); // 고리, 원, 번호를 함께 흐리게
-        _markerViews.Add((go, go.GetComponent<Image>(), group));
+        _markerViews.Add((go, go.GetComponent<Image>(), UiKit.Get<Image>(go.transform, UiPaths.MarkerFill), number, group));
         var questId = m.QuestId;
         Relay(go, () => { _hotMarker = questId; _onHot?.Invoke(questId); },
             () => { _hotMarker = null; _onHot?.Invoke(null); }, () => _onClick?.Invoke(questId));

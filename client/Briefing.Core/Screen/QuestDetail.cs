@@ -21,7 +21,7 @@ public enum DetailLineKind
 public sealed class DetailLine
 {
     public DetailLine(DetailLineKind kind, string questId, string conditionId, string text, string items, string progress,
-        int? marker = null, string markerColor = null, bool ready = false, bool showButton = false)
+        int? marker = null, bool ready = false, bool showButton = false)
     {
         Kind = kind;
         QuestId = questId;
@@ -30,7 +30,6 @@ public sealed class DetailLine
         Items = items;
         Progress = progress;
         Marker = marker;
-        MarkerColor = markerColor;
         Ready = ready;
         ShowButton = showButton;
     }
@@ -42,7 +41,6 @@ public sealed class DetailLine
     public string Items { get; }
     public string Progress { get; }
     public int? Marker { get; }
-    public string MarkerColor { get; }
     public bool Ready { get; }
     public bool ShowButton { get; }
 }
@@ -161,9 +159,9 @@ public static class QuestDetail
     private static DetailLine Objective(string questId, BriefingObjective o, int? questMarker, string items)
     {
         if (o.Done) return new DetailLine(DetailLineKind.Done, questId, o.ConditionId, o.Text, items, LeftColumn.ProgressText(o.Current, o.Target));
-        var marker = questMarker.HasValue && HasPlace(o) ? questMarker : null;
+        var marker = questMarker > 0 && HasPlace(o) ? questMarker : null;
         return new DetailLine(DetailLineKind.Objective, questId, o.ConditionId, o.Text, items, LeftColumn.ProgressText(o.Current, o.Target),
-            marker, marker.HasValue ? MarkerPalette.Hex(marker.Value) : null);
+            marker);
     }
 
     // 맵 탭 안의 locations 는 그 탭 것만 오므로 점이나 구역이 있으면 이 지도에 찍힌다.

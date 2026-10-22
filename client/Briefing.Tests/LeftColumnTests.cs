@@ -93,20 +93,28 @@ public class LeftColumnTests
         Assert.Equal("Provide Viewership", first.Name);
         Assert.Equal("Eliminate any target inside the industrial plant on Customs ×15", first.Summary);
         Assert.Equal(1, first.Marker);
-        Assert.Equal("#ff8c42", first.MarkerColor);
         Assert.Equal("6617beeaa9cfa777ca915b7c", first.TraderId);
         Assert.Equal("레프", first.TraderName);
         Assert.Equal("레", first.TraderInitial);
         Assert.Equal("6 / 15", first.Progress);
         Assert.Equal(0.4f, first.Fraction);
 
-        Assert.Equal("#2ec4b6", rows[1].MarkerColor);
+        Assert.Equal(2, rows[1].Marker);
 
         var unmarked = rows[4]; // 천국에서 태어난 저격수
         Assert.Null(unmarked.Marker);
-        Assert.Null(unmarked.MarkerColor);
         Assert.Equal("4 / 5", unmarked.Progress);
         Assert.Equal(0.8f, unmarked.Fraction);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Quest_row_has_no_marker_below_one(int marker)
+    {
+        var row = LeftColumn.Row(new BriefingQuest { QuestId = "q", Marker = marker }, new Dictionary<string, BriefingTrader>());
+
+        Assert.Null(row.Marker);
     }
 
     [Fact]
@@ -124,7 +132,7 @@ public class LeftColumnTests
         Assert.Equal("목표 2개", any.Rows[3].Summary);
         Assert.Equal("0 / 30", any.Rows[3].Progress);
         Assert.Equal(0f, any.Rows[3].Fraction);
-        Assert.All(any.Rows, r => Assert.Null(r.MarkerColor));
+        Assert.All(any.Rows, r => Assert.Null(r.Marker));
     }
 
     [Fact]
@@ -192,17 +200,5 @@ public class LeftColumnTests
     public void Trader_initial(string name, string expected)
     {
         Assert.Equal(expected, LeftColumn.Initial(name));
-    }
-
-    [Theory]
-    [InlineData(1, "#ff8c42")]
-    [InlineData(2, "#2ec4b6")]
-    [InlineData(10, "#94a3b8")]
-    [InlineData(11, "#ff8c42")]
-    [InlineData(23, "#a78bfa")]
-    [InlineData(0, null)]
-    public void Marker_palette_cycles_the_web_colors(int marker, string expected)
-    {
-        Assert.Equal(expected, MarkerPalette.Hex(marker));
     }
 }

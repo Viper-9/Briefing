@@ -30,18 +30,16 @@ public enum Emphasis
 
 public sealed class MarkerDraw
 {
-    public MarkerDraw(int n, string questId, string color, MapUv at, Emphasis emphasis)
+    public MarkerDraw(int n, string questId, MapUv at, Emphasis emphasis)
     {
         N = n;
         QuestId = questId;
-        Color = color;
         At = at;
         Emphasis = emphasis;
     }
 
     public int N { get; }
     public string QuestId { get; }
-    public string Color { get; }
     public MapUv At { get; }
     public Emphasis Emphasis { get; }
 }
@@ -49,18 +47,16 @@ public sealed class MarkerDraw
 // 꼭짓점은 기본 층 viewBox 기준 비율이다. 웹도 구역을 기본 층 크기의 SVG 한 장에 그린다.
 public sealed class AreaDraw
 {
-    public AreaDraw(int n, string questId, string color, IReadOnlyList<MapUv> polygon, Emphasis emphasis)
+    public AreaDraw(int n, string questId, IReadOnlyList<MapUv> polygon, Emphasis emphasis)
     {
         N = n;
         QuestId = questId;
-        Color = color;
         Polygon = polygon;
         Emphasis = emphasis;
     }
 
     public int N { get; }
     public string QuestId { get; }
-    public string Color { get; }
     public IReadOnlyList<MapUv> Polygon { get; }
     public Emphasis Emphasis { get; }
 }
@@ -171,13 +167,13 @@ public static class MapScene
         return quest != null && (shownQuestIds == null || shownQuestIds.Contains(quest)) ? quest : null;
     }
 
-    // 맵 묶음 퀘스트 중 마커 번호가 있는 것의 목표 위치를 마커·구역으로.
+    // 맵 묶음 퀘스트 중 마커 번호(1부터)가 있는 것의 목표 위치를 마커·구역으로.
     public static MarkerSet Markers(BriefingMap map, ISet<string> shownQuestIds)
     {
         var mapIds = new HashSet<string>(map.LocationIds.Where(id => id != null).Select(id => id.ToLowerInvariant()));
         if (map.Key != null) mapIds.Add(map.Key.ToLowerInvariant());
         var items = map.Quests
-            .Where(q => q.Marker.HasValue && (shownQuestIds == null || shownQuestIds.Contains(q.QuestId)))
+            .Where(q => q.Marker > 0 && (shownQuestIds == null || shownQuestIds.Contains(q.QuestId)))
             .SelectMany(q => q.Objectives.Select(o => new NumberedObjective(q.Marker.Value, q.QuestId, o)));
         return MapProjection.Numbered(items, mapIds);
     }
@@ -197,14 +193,14 @@ public static class MapScene
 
         var markers = set.Markers
             .Where(m => MapProjection.MarkerLevels(def, m, set.Areas).Contains(level))
-            .Select(m => new MarkerDraw(m.N, m.QuestId, MarkerPalette.Hex(m.N), Place(def, m.Point),
+            .Select(m => new MarkerDraw(m.N, m.QuestId, Place(def, m.Point),
                 Look(hot, m.QuestId, anyDone && AllDone(map, m.QuestId, o => o.Locations.Any(l => l.Points.Any(p => p != null && MapProjection.SamePoint(p, m.Point)))))))
             .ToList();
         var basis = MapProjection.DefaultLayer(def);
         var areas = !input.ShowAreas
             ? new List<AreaDraw>()
             : MapProjection.AreaDrawOrder(set.Areas.Where(a => MapProjection.AreaLevels(def, a.Area).Contains(level)))
-                .Select(a => new AreaDraw(a.N, a.QuestId, MarkerPalette.Hex(a.N),
+                .Select(a => new AreaDraw(a.N, a.QuestId,
                     MapProjection.AreaPolygon(def, basis, a.Area).Select(p => Ratio(basis, p)).ToList(),
                     Look(hot, a.QuestId, anyDone && AllDone(map, a.QuestId, o => o.Locations.Any(l => l.Areas.Any(x => x?.Center != null && MapProjection.SameArea(x, a.Area)))))))
                 .ToList();
