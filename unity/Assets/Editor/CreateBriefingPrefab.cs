@@ -58,6 +58,11 @@ public static class CreateBriefingPrefab
     private static readonly Color TooltipBg = Hex("#0a0c0c", 0.96f);
 
     private const string IconFolder = "Assets/Briefing/Icons/";
+    // 카파·등대지기 해금 선행 아이콘(40px). dev-docs/07-kappa-lightkeeper/icons 의 272px 그림을 빈 여백 없이 잘라 줄인 것(카파는 작은 크기에서 잘 읽히는 정면)
+    private const string KappaIconFile = "goal_kappa.png";
+    private const string LighthouseIconFile = "goal_lighthouse.png";
+    private static readonly Color BadgeBg = Hex("#000000", 0.55f);
+    private static readonly Color GoalText = Hex("#c9cbc6", 0.7f); // 범례 글은 목표 글보다 한 단계 흐리게
 
     [MenuItem("Briefing/Create Briefing Prefab")]
     public static void Create()
@@ -291,6 +296,18 @@ public static class CreateBriefingPrefab
         faceImg.preserveAspect = true;
         faceImg.raycastTarget = false;
         face.SetActive(false);
+        // 카파·등대지기 해금 선행 배지. 얼굴(58) 오른쪽 아래 모서리에 겹쳐 두고 코드가 퀘스트마다 켠다.
+        var badges = Child(trader.transform, "Badges");
+        var brt = (RectTransform)badges.transform;
+        brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.5f);
+        brt.pivot = new Vector2(1, 0);
+        brt.anchoredPosition = new Vector2(29, -29);
+        Img(badges, BadgeBg).raycastTarget = false;
+        HLayout(badges, 1, 1, 1, 1, 1, TextAnchor.MiddleCenter, false, false);
+        Fit(badges);
+        GoalIcon(badges.transform, "Kappa", KappaIconFile, 20);
+        GoalIcon(badges.transform, "Lightkeeper", LighthouseIconFile, 20);
+        badges.SetActive(false);
 
         var body = Child(q.transform, "Body");
         Layout(body, flexW: 1, minW: 0);
@@ -346,6 +363,13 @@ public static class CreateBriefingPrefab
         // 마커 원(17)을 얼굴 칸 끝(x=84)에 맞추려고 왼쪽 여백을 67 로 둔다.
         VLayout(d, 67, 0, 8, 10, 6, TextAnchor.UpperLeft, true, false);
 
+        // 줄 배지의 뜻. 해당하는 것만 코드가 켜고 둘 다 아니면 줄째 끈다.
+        var goals = Child(d.transform, "Goals");
+        HLayout(goals, 0, 0, 0, 2, 18, TextAnchor.MiddleLeft, false, false);
+        GoalLegend(goals.transform, "Kappa", KappaIconFile, "Needed to unlock Kappa");
+        GoalLegend(goals.transform, "Lightkeeper", LighthouseIconFile, "Needed to unlock Lightkeeper");
+        goals.SetActive(withSamples);
+
         // 두 줄 템플릿을 한 컨테이너에 둬서 줄이 게임 목표 순서대로 섞여 쌓인다.
         var objectives = Child(d.transform, "Objectives");
         VLayout(objectives, 0, 0, 0, 0, 3, TextAnchor.UpperLeft, true, false);
@@ -366,6 +390,28 @@ public static class CreateBriefingPrefab
             Handover(objectives.transform, "SampleHandover1", "Hand over the found in raid item", "Flash drive", "1 / 2");
         }
         return d;
+    }
+
+    // 카파·등대지기 아이콘 한 칸
+    private static GameObject GoalIcon(Transform parent, string name, string file, float size)
+    {
+        var go = Child(parent, name);
+        var img = Img(go, Color.white);
+        img.sprite = IconSprite(file);
+        img.preserveAspect = true;
+        img.raycastTarget = false;
+        Layout(go, prefW: size, prefH: size, minH: size, minW: size);
+        return go;
+    }
+
+    // 펼침 맨 위의 아이콘 + 뜻 한 쌍. 글은 코드가 언어에 맞춰 바꾼다.
+    private static GameObject GoalLegend(Transform parent, string name, string file, string text)
+    {
+        var go = Child(parent, name);
+        HLayout(go, 0, 0, 0, 0, 6, TextAnchor.MiddleLeft, false, false);
+        GoalIcon(go.transform, "Icon", file, 21);
+        Label(go.transform, "Label", text, 13, GoalText, TextAlignmentOptions.Left);
+        return go;
     }
 
     // 건네주기 버튼이 없는 줄. 마커, 체크, 색은 코드가 줄 종류에 맞춰 바꾼다. done 과 items 는 미리보기용 값이다.

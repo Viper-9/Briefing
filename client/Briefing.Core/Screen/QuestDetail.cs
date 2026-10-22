@@ -51,18 +51,27 @@ public sealed class DetailLine
 // CanTurnIn 은 "완료 가능" 묶음에서만 켜지고 상인 임무 화면으로 가는 버튼을 그린다.
 public sealed class QuestDetailModel
 {
-    public QuestDetailModel(string sectionKey, string questId, IReadOnlyList<DetailLine> lines, bool canTurnIn = false)
+    public QuestDetailModel(string sectionKey, string questId, IReadOnlyList<DetailLine> lines, bool canTurnIn = false,
+        bool kappa = false, bool lightkeeper = false)
     {
         SectionKey = sectionKey;
         QuestId = questId;
         Lines = lines;
         CanTurnIn = canTurnIn;
+        Kappa = kappa;
+        Lightkeeper = lightkeeper;
     }
 
     public string SectionKey { get; }
     public string QuestId { get; }
     public IReadOnlyList<DetailLine> Lines { get; }
     public bool CanTurnIn { get; }
+    // 줄 배지의 뜻을 펼침 맨 위에 글로 적는다.
+    public bool Kappa { get; }
+    public bool Lightkeeper { get; }
+
+    public QuestDetailModel WithGoals(bool kappa, bool lightkeeper) =>
+        new QuestDetailModel(SectionKey, QuestId, Lines, CanTurnIn, kappa, lightkeeper);
 }
 
 // quest 는 서버 퀘스트이고 "제출" 묶음에서는 null. goals 가 null 이면 레이드 중이라 건네주기 버튼을 그리지 않는다.

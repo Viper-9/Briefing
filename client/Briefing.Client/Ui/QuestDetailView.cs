@@ -46,6 +46,9 @@ internal sealed class QuestDetailView
         UiKit.Get<TMP_Text>(d, UiPaths.OpenTasksLabel);
         UiKit.Get<Button>(d, UiPaths.TurnIn).gameObject.SetActive(false);
         UiKit.Get<TMP_Text>(d, UiPaths.TurnInLabel);
+        UiKit.Get<TMP_Text>(d, UiPaths.GoalKappaLabel);
+        UiKit.Get<TMP_Text>(d, UiPaths.GoalLightkeeperLabel);
+        UiKit.Child(d, UiPaths.DetailGoals).gameObject.SetActive(false);
         objective.gameObject.SetActive(false);
         handover.gameObject.SetActive(false);
         _template.SetActive(false);
@@ -60,6 +63,16 @@ internal sealed class QuestDetailView
             var d = go.transform;
             // 게임 버튼은 켜진 계층에서 복제해야 Awake 가 처리기를 연결하므로 블록을 먼저 켠다. 같은 프레임이라 깜빡이지 않는다.
             go.SetActive(true);
+
+            // 줄 배지의 뜻. 해당하는 것만 켠다.
+            UiKit.Guard("goal legend", () =>
+            {
+                UiKit.Get<TMP_Text>(d, UiPaths.GoalKappaLabel).text = Texts.KappaGoal;
+                UiKit.Get<TMP_Text>(d, UiPaths.GoalLightkeeperLabel).text = Texts.LightkeeperGoal;
+                UiKit.Child(d, UiPaths.GoalKappa).gameObject.SetActive(model.Kappa);
+                UiKit.Child(d, UiPaths.GoalLightkeeper).gameObject.SetActive(model.Lightkeeper);
+                UiKit.Child(d, UiPaths.DetailGoals).gameObject.SetActive(model.Kappa || model.Lightkeeper);
+            });
 
             // 한 줄이 실패해도 나머지 줄과 버튼은 그린다.
             var objectiveTemplate = UiKit.Child(d, UiPaths.ObjectiveTemplate).gameObject;

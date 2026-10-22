@@ -16,6 +16,9 @@ public sealed class BriefingResponse
     public Dictionary<string, BriefingTrader> Traders { get; set; } = new Dictionary<string, BriefingTrader>();
     public List<BriefingMap> Maps { get; set; } = new List<BriefingMap>();
     public BriefingAnywhere Anywhere { get; set; } = new BriefingAnywhere();
+    // 카파·등대지기 해금 선행 퀘스트 id 전체. 응답에 없는 퀘스트("제출"·"완료 가능" 줄)의 배지에 쓴다. 예전 QuestCodex 는 보내지 않아 빈 목록.
+    public List<string> KappaQuests { get; set; } = new List<string>();
+    public List<string> LightkeeperQuests { get; set; } = new List<string>();
 }
 
 public sealed class BriefingTrader
@@ -54,6 +57,9 @@ public sealed class BriefingQuest
     public double? Current { get; set; }
     public double? Target { get; set; }
     public List<BriefingObjective> Objectives { get; set; } = new List<BriefingObjective>();
+    // 카파(Collector)·등대지기 해금(Information Source)을 열려면 끝내야 하는 퀘스트인지. 예전 QuestCodex 는 보내지 않아 false.
+    public bool Kappa { get; set; }
+    public bool Lightkeeper { get; set; }
 }
 
 // 펼친 퀘스트의 목표 한 줄. 서버는 끝나지 않은 레이드 목표만 보낸다(제출·무기 조립은 없고, 찾기는 정해진 자리에 생기는 퀘스트 아이템만).

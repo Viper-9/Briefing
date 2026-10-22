@@ -63,6 +63,9 @@ public static class Texts
         $"Целей к поиску: {count}");
     public static string Handover => L("건네주기", "Hand over", "Передать");
     public static string OpenInTasks => L("임무 탭에서 보기", "Show in Tasks", "Показать в заданиях");
+    // 펼침 맨 위, 줄 배지의 뜻
+    public static string KappaGoal => L("카파 해금 선행", "Needed to unlock Kappa", "Нужно для Каппы");
+    public static string LightkeeperGoal => L("등대지기 해금 선행", "Needed to unlock Lightkeeper", "Нужно для Смотрителя");
     // "완료 가능" 묶음과 상인 임무 화면으로 가는 버튼
     public static string TurnInTitle => L("완료 가능", "Ready to turn in", "Можно сдать");
     public static string TurnInSummary => L("상인에게 보고하면 완료", "Report to the trader to complete", "Доложите торговцу, чтобы завершить");
