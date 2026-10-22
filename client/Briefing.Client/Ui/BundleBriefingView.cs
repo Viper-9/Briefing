@@ -34,6 +34,12 @@ internal sealed class BundleBriefingView : IBriefingView
     private bool _hotFromList;      // HotQuestId 가 목록 줄에서 왔다. 목록을 다시 그리면 그 줄이 사라지므로 지운다
     private TraderFaces _faces;
     private QuestBridge _bridge;
+    // 게임 퀘스트에서 읽은 제출·찾기·완료 가능 목록. 조건 판정이 인벤토리를 훑어 수백 ms 걸리므로
+    // 펼침, 묶음 접기, 맵 고르기에서는 다시 읽지 않는다. _gameStale 이면 다음 그리기에서 새로 읽는다.
+    private IReadOnlyList<HandoverGoal> _goals;
+    private IReadOnlyList<FindGoal> _finds;
+    private IReadOnlyList<TurnInQuest> _turnIns;
+    private bool _gameStale = true;
     private bool _shown;
 
     public GameObject Build(InventoryScreen screen, RectTransform parent)
@@ -93,6 +99,7 @@ internal sealed class BundleBriefingView : IBriefingView
     public void OnHidden()
     {
         _shown = false;
+        _gameStale = true; // 탭 밖에서 인벤토리나 퀘스트가 바뀔 수 있다
         BriefingState.HotQuestId = null; // 숨기면 마우스 내림 알림이 오지 않을 수 있다
         _hotFromList = false;
         _faces?.CancelAll();
@@ -106,6 +113,7 @@ internal sealed class BundleBriefingView : IBriefingView
     // 아니면 마지막 응답으로 한 번만 그린다.
     private async Task RefreshAndRenderAsync()
     {
+        _gameStale = true; // 탭 표시, 새로고침, 제출 뒤에만 게임 퀘스트를 다시 읽는다
         var request = RaidInfo.InRaid() ? BriefingClient.Pending : BriefingClient.RefreshAsync();
         Render(false);
         if (request == null) return;
@@ -179,17 +187,23 @@ internal sealed class BundleBriefingView : IBriefingView
             UiKit.Guard("live progress", () => response = ApplyLive(response)); // 실패하면 응답 값 그대로
             _response = response;
         }
-        IReadOnlyList<HandoverGoal> goals = null;
-        UiKit.Guard("handover goals", () => goals = _bridge.Goals()); // 실패해도 건네주기만 빠진다
-        IReadOnlyList<FindGoal> finds = null;
-        UiKit.Guard("find goals", () => finds = _bridge.Finds()); // 실패하면 찾기만 남은 퀘스트가 "제출" 묶음에서 빠진다
+        if (_gameStale)
+        {
+            _goals = null;
+            _finds = null;
+            _turnIns = null;
+            UiKit.Guard("handover goals", () => _goals = _bridge.Goals()); // 실패해도 건네주기만 빠진다
+            UiKit.Guard("find goals", () => _finds = _bridge.Finds()); // 실패하면 찾기만 남은 퀘스트가 "제출" 묶음에서 빠진다
+            UiKit.Guard("turn-in quests", () => _turnIns = _bridge.TurnIns()); // 실패하면 "완료 가능" 묶음만 빠진다
+            _gameStale = false;
+        }
+        var goals = _goals;
+        var finds = _finds;
+        var turnIns = _turnIns;
         // 펼친 퀘스트의 게임 목표. 실패하면 null 이고 펼침은 서버 목표와 건네주기 줄로 그린다.
         IReadOnlyList<GameObjective> objectives = null;
         if (BriefingState.ExpandedQuestId != null)
             UiKit.Guard("quest objectives", () => objectives = _bridge.Objectives(BriefingState.ExpandedQuestId));
-        // 실패하면 "완료 가능" 묶음만 빠진다.
-        IReadOnlyList<TurnInQuest> turnIns = null;
-        UiKit.Guard("turn-in quests", () => turnIns = _bridge.TurnIns());
         LeftColumnModel model = null;
         UiKit.Guard("build model", () => model = LeftColumn.Build(response, BriefingState.SelectedMapKey,
             goals, BriefingState.ExpandedSection, BriefingState.ExpandedQuestId, objectives, turnIns, raidMapKey, finds));
