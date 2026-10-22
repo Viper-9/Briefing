@@ -55,6 +55,8 @@ to look at the map and its extracts.
   an objective summary, progress numbers and a bar.
 - The number badge (①②③…) next to a map quest matches the marker number on the map. Pointing at a quest or
   expanding it highlights its badge and markers together.
+- Quests needed for the Kappa container or for Lightkeeper get a small badge on the bottom-right corner of the
+  trader's face.
 - Outside a raid two more groups appear:
   - **Ready to turn in**: at the top. Quests that only need a report to the trader.
   - **Hand in**: quests with item hand-over objectives left. Quests you can hand in right now get a light blue hand
@@ -63,6 +65,10 @@ to look at the map and its extracts.
 ### Expanding a quest · hand-overs · turning in
 
 Click a quest row to expand its objectives in game order, with the target item names in small print below.
+Objectives with a place on the map get a pin, and finished ones are greyed out with a check mark.
+Quests with a Kappa or Lightkeeper badge get a line such as "Needed to unlock Lightkeeper" above the objectives.
+
+![Expanded quest](media/quest-expand.png)
 
 ![Hand-over](media/quest-handover.png)
 
