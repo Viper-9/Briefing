@@ -43,6 +43,9 @@ internal static class UiPaths
     // 퀘스트 줄 안(줄 기준)
     internal const string QuestInitial = "Trader/Initial";
     internal const string QuestFace = "Trader/Face";
+    internal const string QuestBadges = "Trader/Badges"; // 카파·등대지기 해금 선행 배지, 처음엔 꺼져 있다
+    internal const string QuestBadgeKappa = "Trader/Badges/Kappa";
+    internal const string QuestBadgeLightkeeper = "Trader/Badges/Lightkeeper";
     internal const string QuestMarker = "Body/Title/Marker";
     internal const string QuestMarkerNumber = "Body/Title/Marker/Number";
     internal const string QuestName = "Body/Title/Name";
@@ -52,6 +55,11 @@ internal static class UiPaths
     internal const string QuestBar = "Progress/Bar";
     internal const string QuestFill = "Progress/Bar/Fill";
     // 펼침 블록 안(블록 기준). 줄 템플릿은 블록을 복제한 뒤 그 안에서 다시 복제하고, 모든 줄이 Objectives 에 게임 순서대로 쌓인다.
+    internal const string DetailGoals = "Goals"; // 배지의 뜻, 처음엔 꺼져 있다
+    internal const string GoalKappa = "Goals/Kappa";
+    internal const string GoalKappaLabel = "Goals/Kappa/Label";
+    internal const string GoalLightkeeper = "Goals/Lightkeeper";
+    internal const string GoalLightkeeperLabel = "Goals/Lightkeeper/Label";
     internal const string DetailObjectives = "Objectives";
     internal const string ObjectiveTemplate = "Objectives/ObjectiveTemplate";
     internal const string HandoverTemplate = "Objectives/HandoverTemplate";

@@ -56,7 +56,9 @@ internal sealed class QuestListView
         var q = _questTemplate.transform;
         foreach (var p in new[] { UiPaths.QuestInitial, UiPaths.QuestMarkerNumber, UiPaths.QuestName, UiPaths.QuestSummary, UiPaths.QuestValue })
             UiKit.Get<TMP_Text>(q, p);
-        foreach (var p in new[] { UiPaths.QuestFace, UiPaths.QuestMarker, UiPaths.QuestBar, UiPaths.QuestHandIcon }) UiKit.Get<Image>(q, p);
+        foreach (var p in new[] { UiPaths.QuestFace, UiPaths.QuestMarker, UiPaths.QuestBar, UiPaths.QuestHandIcon, UiPaths.QuestBadges,
+                     UiPaths.QuestBadgeKappa, UiPaths.QuestBadgeLightkeeper })
+            UiKit.Get<Image>(q, p);
         UiKit.Child(q, UiPaths.QuestFill);
         if (_questTemplate.GetComponent<Button>() == null) throw new InvalidOperationException($"{UiPaths.QuestTemplate} has no Button");
         var rowBg = _questTemplate.GetComponent<Image>();
@@ -208,6 +210,10 @@ internal sealed class QuestListView
         var initial = UiKit.Get<TMP_Text>(t, UiPaths.QuestInitial);
         initial.text = row.TraderInitial;
         _faces.Assign(row.TraderId, UiKit.Get<Image>(t, UiPaths.QuestFace), initial.gameObject);
+        // 얼굴 대신 첫 글자를 보일 때도 같은 자리에 붙는다.
+        UiKit.Child(t, UiPaths.QuestBadgeKappa).gameObject.SetActive(row.Kappa);
+        UiKit.Child(t, UiPaths.QuestBadgeLightkeeper).gameObject.SetActive(row.Lightkeeper);
+        UiKit.Child(t, UiPaths.QuestBadges).gameObject.SetActive(row.Kappa || row.Lightkeeper);
 
         if (selected)
         {
