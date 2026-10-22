@@ -36,9 +36,10 @@ public static class CreateBriefingPrefab
     private static readonly Color OverlayBg = Hex("#141717", 0.9f);
     private static readonly Color FloorOnBg = Hex("#d8dbd5");
     private static readonly Color FloorText = Hex("#cfd2cd");
-    private static readonly Color NotifyDot = Hex("#e5484d");
     private static readonly Color DoorLocked = Hex("#ff2a2a");
-    private static readonly Color MarkerRing = Hex("#141616");
+    // 퀘스트 마커는 한 가지 톤이다. 여기엔 평소 색만 넣고, 강조 색은 코드(MarkerTone)가 바꾼다.
+    private static readonly Color MarkerInk = TextMain;
+    private static readonly Color MarkerDark = Hex("#141616");
     // 오른쪽 열 색
     private static readonly Color FilterBg = Hex("#2b2614");
     private static readonly Color Gold = Hex("#c9a64a");
@@ -70,7 +71,7 @@ public static class CreateBriefingPrefab
         if (!ConfirmOverwrite()) return;
         Directory.CreateDirectory("Assets/Briefing");
         _placeholderFont = null; // 실행마다 자리 표시 글꼴을 새로 만든다
-        GenerateIcons(); // 판정 표시와 FIR 고리 PNG. IconSprite 가 읽기 전에 만든다
+        GenerateIcons(); // 판정 표시, FIR 고리, 마커 테두리, 핀 PNG. IconSprite 가 읽기 전에 만든다
 
         var root = new GameObject("BriefingScreen", typeof(RectTransform));
         Stretch(root);
@@ -223,15 +224,15 @@ public static class CreateBriefingPrefab
 
         var c = content.transform;
         Section(c, "SectionTemplate", "Customs", "7").SetActive(false);
-        Quest(c, "QuestTemplate", "R", "1", "#ff8c42", "Quest name", "Objective summary", "0 / 1", 0f).SetActive(false);
+        Quest(c, "QuestTemplate", "R", "1", "Quest name", "Objective summary", "0 / 1", 0f).SetActive(false);
         Empty(c, "EmptyTemplate").SetActive(false);
         Detail(c, "DetailTemplate", false).SetActive(false);
 
         Section(c, "SampleSection", "On Customs", "7");
-        Quest(c, "SampleQuest1", "R", "1", "#ff8c42", "Provide Viewership",
+        Quest(c, "SampleQuest1", "R", "1", "Provide Viewership",
             "Eliminate any target inside the industrial plant on Customs x15", "6 / 15", 0.4f);
         Detail(c, "SampleDetail", true);
-        Quest(c, "SampleQuest2", "M", null, null, "A Shooter Born in Heaven",
+        Quest(c, "SampleQuest2", "M", null, "A Shooter Born in Heaven",
             "Eliminate PMC operatives with a headshot while using a bolt-action rifle on Customs x5", "4 / 5", 0.8f);
     }
 
@@ -276,7 +277,7 @@ public static class CreateBriefingPrefab
         return s;
     }
 
-    private static GameObject Quest(Transform parent, string name, string initial, string marker, string markerHex,
+    private static GameObject Quest(Transform parent, string name, string initial, string marker,
         string title, string summary, string progress, float fraction)
     {
         var q = Child(parent, name);
@@ -317,13 +318,25 @@ public static class CreateBriefingPrefab
         HLayout(titleRow, 0, 0, 0, 0, 8, TextAnchor.MiddleLeft, false, false);
         // 이름은 글 폭만큼만 차지해 마커와 손 아이콘이 이름 끝에 붙고, 남는 폭은 Fill 이 받는다.
         // 폭이 모자라면 이름만 줄어든다.
-        Layout(Label(titleRow.transform, "Name", title, 16, TextBright, TextAlignmentOptions.Left).gameObject, flexW: 0);
+        const float titleSize = 16;
+        Layout(Label(titleRow.transform, "Name", title, titleSize, TextBright, TextAlignmentOptions.Left).gameObject, flexW: 0);
+        // 지도 번호. 원 지름을 이름 글자 크기와 같게 한다. 평소엔 테두리와 번호만 보이고,
+        // 강조되면 코드가 Fill 을 채우고 테두리와 번호를 어둡게 바꾼다.
         var mk = Child(titleRow.transform, "Marker");
-        var mkImg = Img(mk, markerHex != null ? Hex(markerHex) : Color.white);
-        mkImg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd"); // 원 모양(없으면 사각형)
-        mkImg.raycastTarget = false;
-        Layout(mk, prefW: 21, prefH: 21, minH: 21, minW: 21);
-        Stretch(Label(mk.transform, "Number", marker ?? "1", 13, Hex("#111111"), TextAlignmentOptions.Center).gameObject);
+        Layout(mk, prefW: titleSize, prefH: titleSize, minH: titleSize, minW: titleSize);
+        var mkFill = Child(mk.transform, "Fill");
+        Stretch(mkFill);
+        ((RectTransform)mkFill.transform).offsetMin = new Vector2(1, 1); // 가장자리를 테두리 밑으로 숨긴다
+        ((RectTransform)mkFill.transform).offsetMax = new Vector2(-1, -1);
+        var mkFillImg = Img(mkFill, Color.clear);
+        mkFillImg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
+        mkFillImg.raycastTarget = false;
+        var mkRing = Child(mk.transform, "Ring");
+        Stretch(mkRing);
+        var mkRingImg = Img(mkRing, MarkerInk);
+        mkRingImg.sprite = IconSprite(MarkerRingFile);
+        mkRingImg.raycastTarget = false;
+        MarkerNumber(mk.transform, marker ?? "1", 11);
         mk.SetActive(marker != null);
         // 손 아이콘. 지금 건네줄 수 있는 퀘스트만 코드가 켜고 게임의 퀘스트 종류 아이콘을 하늘색으로 넣는다.
         var hand = Child(titleRow.transform, "HandIcon");
@@ -360,7 +373,7 @@ public static class CreateBriefingPrefab
         var d = Child(parent, name);
         Img(d, DetailBg).raycastTarget = false;
         // 퀘스트 줄과 맞춘다. 얼굴 칸 76 에 여백 12 를 더해 글이 x=88 에서 시작하고, 오른쪽 112 는 진행 수치 칸이다.
-        // 마커 원(17)을 얼굴 칸 끝(x=84)에 맞추려고 왼쪽 여백을 67 로 둔다.
+        // 핀과 체크 자리(17)를 얼굴 칸 끝(x=84)에 맞추려고 왼쪽 여백을 67 로 둔다.
         VLayout(d, 67, 0, 8, 10, 6, TextAnchor.UpperLeft, true, false);
 
         // 줄 배지의 뜻. 해당하는 것만 코드가 켜고 둘 다 아니면 줄째 끈다.
@@ -373,7 +386,7 @@ public static class CreateBriefingPrefab
         // 두 줄 템플릿을 한 컨테이너에 둬서 줄이 게임 목표 순서대로 섞여 쌓인다.
         var objectives = Child(d.transform, "Objectives");
         VLayout(objectives, 0, 0, 0, 0, 3, TextAnchor.UpperLeft, true, false);
-        Objective(objectives.transform, "ObjectiveTemplate", "4", "#facc15", "Objective text", null, "0 / 1", false).SetActive(false);
+        Objective(objectives.transform, "ObjectiveTemplate", true, "Objective text", null, "0 / 1", false).SetActive(false);
         Handover(objectives.transform, "HandoverTemplate", "Hand over the item", null, "0 / 1").SetActive(false);
 
         var actions = Child(d.transform, "Actions");
@@ -384,9 +397,9 @@ public static class CreateBriefingPrefab
 
         if (withSamples)
         {
-            Objective(objectives.transform, "SampleObjective1", null, null, "Find in raid", "Fleece fabric", "5 / 5", true);
-            Objective(objectives.transform, "SampleObjective2", "1", "#ff8c42", "Eliminate any target inside the industrial plant on Customs x15", null, "6 / 15", false);
-            Objective(objectives.transform, "SampleObjective3", null, null, "Find in raid", "Fleece fabric, Ripstop fabric", "2 / 5", false);
+            Objective(objectives.transform, "SampleObjective1", false, "Find in raid", "Fleece fabric", "5 / 5", true);
+            Objective(objectives.transform, "SampleObjective2", true, "Eliminate any target inside the industrial plant on Customs x15", null, "6 / 15", false);
+            Objective(objectives.transform, "SampleObjective3", false, "Find in raid", "Fleece fabric, Ripstop fabric", "2 / 5", false);
             Handover(objectives.transform, "SampleHandover1", "Hand over the found in raid item", "Flash drive", "1 / 2");
         }
         return d;
@@ -414,21 +427,21 @@ public static class CreateBriefingPrefab
         return go;
     }
 
-    // 건네주기 버튼이 없는 줄. 마커, 체크, 색은 코드가 줄 종류에 맞춰 바꾼다. done 과 items 는 미리보기용 값이다.
-    private static GameObject Objective(Transform parent, string name, string marker, string markerHex, string text, string items,
+    // 건네주기 버튼이 없는 줄. 핀, 체크, 색은 코드가 줄 종류에 맞춰 바꾼다. onMap, done, items 는 미리보기용 값이다.
+    private static GameObject Objective(Transform parent, string name, bool onMap, string text, string items,
         string progress, bool done)
     {
         var o = Child(parent, name);
         Layout(o, minH: 24);
         HLayout(o, 0, 0, 2, 2, 4, TextAnchor.UpperLeft, false, false); // 마커(67~84)와 간격 4 다음 글이 x=88
 
-        // 원이 없는 줄도 마커 자리는 켜 둬서 글 시작을 맞추고, 끝난 줄은 이 자리에 체크를 켠다.
+        // 지도에 있는 목표는 이 자리에 핀을 켠다. 핀이 없는 줄도 자리는 켜 둬서 글 시작을 맞추고, 끝난 줄은 이 자리에 체크를 켠다.
         var mk = Child(o.transform, "Marker");
-        var mkImg = Img(mk, markerHex != null ? Hex(markerHex) : Color.clear);
-        mkImg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
+        var mkImg = Img(mk, onMap && !done ? MarkerInk : Color.clear);
+        mkImg.sprite = IconSprite(PinFile);
+        mkImg.preserveAspect = true;
         mkImg.raycastTarget = false;
         Layout(mk, prefW: 17, prefH: 17, minH: 17, minW: 17);
-        Stretch(Label(mk.transform, "Number", marker ?? "", 11, Hex("#111111"), TextAlignmentOptions.Center).gameObject);
         Check(mk.transform, done);
 
         Layout(Body(o.transform, text, items, done, 0), flexW: 1);
@@ -605,25 +618,32 @@ public static class CreateBriefingPrefab
         return go;
     }
 
-    // 어두운 고리 안에 퀘스트 색 원(Fill)과 번호. 확대해도 화면에서 같은 크기로 보이게 코드가 배율로 나눈다.
+    // 밝은 고리 안에 어두운 원(Fill)과 번호. 강조되면 코드가 색을 뒤집는다. 확대해도 화면에서 같은 크기로 보이게 코드가 배율로 나눈다.
     private static GameObject Marker(Transform parent, string name)
     {
         var go = Child(parent, name);
         var rt = (RectTransform)go.transform;
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(24, 24);
-        Img(go, MarkerRing).sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
+        rt.sizeDelta = new Vector2(22, 22);
+        Img(go, MarkerInk).sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
         var fill = Child(go.transform, "Fill");
         Stretch(fill);
         ((RectTransform)fill.transform).offsetMin = new Vector2(2, 2);
         ((RectTransform)fill.transform).offsetMax = new Vector2(-2, -2);
-        var fillImg = Img(fill, Hex("#ff8c42"));
+        var fillImg = Img(fill, MarkerDark);
         fillImg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
         fillImg.raycastTarget = false;
-        var number = Label(go.transform, "Number", "1", 12, Hex("#111111"), TextAlignmentOptions.Center);
-        number.overflowMode = TextOverflowModes.Overflow;
-        Stretch(number.gameObject);
+        MarkerNumber(go.transform, "1", 12);
         return go;
+    }
+
+    // 마커 번호. 줄 높이가 아니라 글자 모양을 기준으로 가운데에 놓아 숫자가 원 한가운데 오게 한다.
+    private static TextMeshProUGUI MarkerNumber(Transform parent, string text, float size)
+    {
+        var t = Label(parent, "Number", text, size, MarkerInk, TextAlignmentOptions.MidlineGeoAligned);
+        t.overflowMode = TextOverflowModes.Overflow;
+        Stretch(t.gameObject);
+        return t;
     }
 
     private static GameObject Floor(Transform parent, string name, string label, bool selected)
@@ -639,13 +659,13 @@ public static class CreateBriefingPrefab
         var t = Label(f.transform, "Label", label, 14, selected ? Hex("#161817") : FloorText, TextAlignmentOptions.Center);
         t.overflowMode = TextOverflowModes.Overflow;
         Stretch(t.gameObject);
-        // 다른 층에 퀘스트 마커가 있으면 켜는 점. 웹 .qc-map__dot 처럼 버튼 오른쪽 위 모서리에 걸친다.
+        // 다른 층에 퀘스트 마커가 있으면 켜는 점. 웹 .qc-map__dot 처럼 버튼 오른쪽 위 모서리에 걸치고, 색은 마커와 같은 톤이다.
         var dot = Child(f.transform, "Dot");
         var drt = (RectTransform)dot.transform;
         drt.anchorMin = drt.anchorMax = new Vector2(1, 1);
         drt.sizeDelta = new Vector2(8, 8);
         drt.anchoredPosition = new Vector2(-1, -1);
-        var dotImg = Img(dot, NotifyDot);
+        var dotImg = Img(dot, MarkerInk);
         dotImg.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
         dotImg.raycastTarget = false;
         dot.SetActive(false);
@@ -1185,6 +1205,8 @@ public static class CreateBriefingPrefab
     private const string MarkStashFile = "mark_stash.png";
     private const string MarkWarnFile = "mark_warn.png";
     private const string RingFile = "ring.png";
+    private const string MarkerRingFile = "marker_ring.png";
+    private const string PinFile = "pin.png";
 
     private static void GenerateIcons()
     {
@@ -1210,6 +1232,22 @@ public static class CreateBriefingPrefab
         {
             var d = Mathf.Sqrt((x - 0.5f) * (x - 0.5f) + (y - 0.5f) * (y - 0.5f));
             return d < 0.46f && d > 0.31f;
+        });
+        // 목록 지도 번호의 테두리. 16px 로 그리면 1.5px 두께다
+        WriteIcon(MarkerRingFile, (x, y) =>
+        {
+            var d = Mathf.Sqrt((x - 0.5f) * (x - 0.5f) + (y - 0.5f) * (y - 0.5f));
+            return d < 0.5f && d > 0.405f;
+        });
+        // 지도에 있는 목표의 핀. 구멍 뚫린 둥근 머리(가운데 0.5, 0.6 반지름 0.22)에서 아래 끝(0.5, 0.12)으로 좁아진다.
+        // 아래 끝에서 머리에 닿는 접선이 높이 0.5 에서 만나고 기울기는 0.516 이다.
+        WriteIcon(PinFile, (x, y) =>
+        {
+            float dx = x - 0.5f, dy = y - 0.6f;
+            var head = dx * dx + dy * dy;
+            if (head < 0.085f * 0.085f) return false;
+            if (head < 0.22f * 0.22f) return true;
+            return y >= 0.12f && y <= 0.5f && Mathf.Abs(dx) <= (y - 0.12f) * 0.516f;
         });
         AssetDatabase.Refresh();
     }

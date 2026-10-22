@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!28 &-2192678800499323317
+--- !u!28 &-4698042022981181132
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Name: Placeholder SDF
   m_EditorClassIdentifier: 
   hashCode: 0
-  material: {fileID: 1715892275209890224}
+  material: {fileID: 923336792913740700}
   materialHashCode: -2006316128
   m_Version: 1.1.0
   m_SourceFontFileGUID: e3265ab4bf004d28a9537516768c1c75
@@ -1347,7 +1347,7 @@ MonoBehaviour:
     m_GlyphIndex: 16
     m_Scale: 1
   m_AtlasTextures:
-  - {fileID: -2192678800499323317}
+  - {fileID: -4698042022981181132}
   m_AtlasTextureIndex: 0
   m_IsMultiAtlasTexturesEnabled: 0
   m_ClearDynamicDataOnBuild: 0
@@ -1824,7 +1824,7 @@ MonoBehaviour:
   boldSpacing: 7
   italicStyle: 35
   tabSize: 10
---- !u!21 &1715892275209890224
+--- !u!21 &923336792913740700
 Material:
   serializedVersion: 8
   m_ObjectHideFlags: 0
@@ -1848,7 +1848,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: -2192678800499323317}
+        m_Texture: {fileID: -4698042022981181132}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
