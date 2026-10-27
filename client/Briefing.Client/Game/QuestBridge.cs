@@ -176,7 +176,9 @@ internal sealed class QuestBridge
             foreach (var quest in controller.Quests)
             {
                 if (quest?.Template == null || !targets.QuestIds.Contains(quest.Id)) continue;
-                if (quest.QuestStatus != EQuestStatus.Started || !controller.IsQuestForCurrentProfile(quest)) continue;
+                // 레이드 중 목표를 다 채우면 게임이 바로 AvailableForFinish 로 바꾸므로 그 상태도 읽는다.
+                if (quest.QuestStatus != EQuestStatus.Started && quest.QuestStatus != EQuestStatus.AvailableForFinish) continue;
+                if (!controller.IsQuestForCurrentProfile(quest)) continue;
                 foreach (var condition in quest.NecessaryConditions)
                 {
                     if (condition == null) continue;
