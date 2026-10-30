@@ -147,6 +147,7 @@ public static class Texts
     public static string TabBring => L("준비물", "Supplies", "Припасы");
     public static string TabFind => L("수집", "Collect", "Сбор");
     public static string TabGear => L("장비", "Gear", "Снаряжение");
+    public static string TabKeys => L("열쇠", "Keys", "Ключи");
     public static string BringHere => L("레이드에 가져갈 퀘스트 아이템", "Quest items to bring", "Взять с собой в рейд");
     public static string BringNone => L("준비물 없음", "No supplies", "Нет припасов");
     public static string ShortRows(int count) => L($"부족 {count}", $"{count} short", $"Не хватает: {count}");
@@ -167,6 +168,18 @@ public static class Texts
         "Квестовый предмет · появляется, пока задание активно");
     public static string LootItemKind => L("일반 아이템 · 레이드에서 언제든 파밍", "Regular item · lootable in any raid", "Обычный предмет · можно найти в любом рейде");
     public static string ShortBy(string count) => L($"부족 {count}", $"Short {count}", $"Не хватает {count}");
+
+    // 열쇠 탭
+    public static string KeysMissing => L("없는 열쇠", "Missing", "Нет в наличии");
+    public static string KeysNotCarried => L("지니지 않은 열쇠", "Not carried", "Не при себе");
+    public static string KeysInStash => L("보관함에 있는 열쇠", "In stash", "В схроне");
+    public static string KeysCarried => L("지닌 열쇠", "Carried", "При себе");
+    public static string KeysNone => L("필요한 열쇠 없음", "No keys needed", "Ключи не нужны");
+    public static string FilterEmptyKeys => L("이 퀘스트는 열쇠가 필요 없습니다", "No keys needed for this quest", "Для этого задания ключи не нужны");
+    public static string KeyCarried => L("지니고 있음", "Carried", "При себе");
+    public static string KeyInStash => L("보관함에 있음, 지니지 않음", "In stash, not carried", "В схроне, не при себе");
+    public static string KeyMissing => L("없음", "Not owned", "Нет в наличии");
+    public static string KeyNotCarried => L("지니지 않음", "Not carried", "Не при себе");
 
     // 장비 탭. 조건 라벨은 웹과 같다.
     public static string GearLoadoutTitle => L("현재 장비", "Current gear", "Текущее снаряжение");

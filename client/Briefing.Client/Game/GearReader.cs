@@ -104,7 +104,11 @@ internal sealed class GearReader
                 Item.TraverseTree(item, parts, (i, container) => container is Slot); // 방탄판·부착물까지, 격자 안 내용물은 빼고
                 foreach (var p in parts) if (p != null) worn.Add(p.StringTemplateId);
             }
-            return new EquippedGear(weapons, worn);
+            // 열쇠는 주머니·가방·열쇠 보관함 안에 있으니 격자 안 내용물까지 모두 센다.
+            var all = new List<Item>();
+            Item.TraverseTree(equipment, all, (i, container) => true);
+            var carried = new HashSet<string>(all.Where(p => p != null && p != equipment).Select(p => p.StringTemplateId));
+            return new EquippedGear(weapons, worn, carried);
         }
         catch (Exception e)
         {
@@ -123,6 +127,7 @@ internal sealed class GearReader
         {
             snapshot.Weapons = gear.Weapons.Select(w => new GearWeapon(w.Tpl, w.Caliber, w.Parts, w.Details, w.Mountable)).ToList();
             snapshot.Worn = gear.Worn;
+            snapshot.Carried = gear.Carried;
         }
         if (_stash != null)
         {
@@ -227,12 +232,14 @@ internal sealed class LoadoutSlot
 
 internal sealed class EquippedGear
 {
-    internal EquippedGear(List<EquippedWeapon> weapons, HashSet<string> worn)
+    internal EquippedGear(List<EquippedWeapon> weapons, HashSet<string> worn, HashSet<string> carried)
     {
         Weapons = weapons;
         Worn = worn;
+        Carried = carried;
     }
 
     internal List<EquippedWeapon> Weapons { get; }
     internal HashSet<string> Worn { get; }
+    internal HashSet<string> Carried { get; }
 }

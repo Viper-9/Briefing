@@ -815,6 +815,7 @@ public static class CreateBriefingPrefab
         RightTab(tabs.transform, "Bring", "Bring", "2", true);
         RightTab(tabs.transform, "Find", "Find", "15", false);
         RightTab(tabs.transform, "Gear", "Gear", "7", false);
+        RightTab(tabs.transform, "Keys", "Keys", "3", false);
 
         var filter = Child(c, "Filter");
         Img(filter, FilterBg);

@@ -135,6 +135,7 @@ internal static class UiPaths
     internal const string TabBring = RightTabs + "/Bring";
     internal const string TabFind = RightTabs + "/Find";
     internal const string TabGear = RightTabs + "/Gear";
+    internal const string TabKeys = RightTabs + "/Keys";
     internal const string TabSelected = "Selected";
     internal const string TabLabel = "Label";
     internal const string TabCount = "Count";

@@ -72,7 +72,8 @@ internal sealed class RightColumnView
     internal RightColumnView(Transform screenRoot, Action onChanged)
     {
         _onChanged = onChanged;
-        foreach (var (key, path) in new[] { (RightTabKey.Bring, UiPaths.TabBring), (RightTabKey.Find, UiPaths.TabFind), (RightTabKey.Gear, UiPaths.TabGear) })
+        AddKeysTab(screenRoot);
+        foreach (var (key, path) in new[] { (RightTabKey.Bring, UiPaths.TabBring), (RightTabKey.Find, UiPaths.TabFind), (RightTabKey.Gear, UiPaths.TabGear), (RightTabKey.Keys, UiPaths.TabKeys) })
         {
             var tab = UiKit.Child(screenRoot, path);
             var button = tab.GetComponent<Button>();
@@ -191,6 +192,9 @@ internal sealed class RightColumnView
             case RightTabKey.Gear:
                 RenderGear(model.Gear, loadout);
                 break;
+            case RightTabKey.Keys:
+                RenderItems(model.Keys.Sections, model.Keys.Empty);
+                break;
         }
         if (_drawnTab != tab)
         {
@@ -199,6 +203,17 @@ internal sealed class RightColumnView
             _scroll.verticalNormalizedPosition = 1f;
             _drawnTab = tab;
         }
+    }
+
+    // 열쇠 탭이 없는 예전 번들이면 수집 탭을 복제해 맨 끝에 둔다. 버튼 리스너는 런타임 것이라 복제되지 않는다.
+    private static void AddKeysTab(Transform screenRoot)
+    {
+        if (screenRoot.Find(UiPaths.TabKeys) != null) return;
+        var find = UiKit.Child(screenRoot, UiPaths.TabFind);
+        var copy = UnityEngine.Object.Instantiate(find.gameObject, find.parent, false);
+        copy.name = "Keys";
+        copy.transform.SetAsLastSibling();
+        UiKit.Child(copy.transform, UiPaths.TabSelected).gameObject.SetActive(false);
     }
 
     // 응답이 없을 때는 counts 로 탭 숫자도 지운다.

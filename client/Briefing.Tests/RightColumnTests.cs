@@ -89,8 +89,8 @@ public class RightColumnTests
     {
         var m = Build("factory4_day");
 
-        Assert.Equal(new[] { RightTabKey.Bring, RightTabKey.Find, RightTabKey.Gear }, m.Tabs.Select(t => t.Key));
-        Assert.Equal(new[] { "준비물", "수집", "장비" }, m.Tabs.Select(t => t.Label));
+        Assert.Equal(new[] { RightTabKey.Bring, RightTabKey.Find, RightTabKey.Gear, RightTabKey.Keys }, m.Tabs.Select(t => t.Key));
+        Assert.Equal(new[] { "준비물", "수집", "장비", "열쇠" }, m.Tabs.Select(t => t.Label));
         Assert.Equal(1, m.Tabs[0].Count);
         Assert.Equal(2, m.Tabs[1].Count);
         Assert.Null(m.FilterText);
@@ -233,7 +233,7 @@ public class RightColumnTests
             var en = FixtureFiles.Load(FixtureFiles.Active, "en");
             var m = RightColumn.Build(en, en.Maps[1], null, null, null);
 
-            Assert.Equal(new[] { "Supplies", "Collect", "Gear" }, m.Tabs.Select(t => t.Label));
+            Assert.Equal(new[] { "Supplies", "Collect", "Gear", "Keys" }, m.Tabs.Select(t => t.Label));
             Assert.Equal("Quest items to bring", m.Bring.Single().Title);
             Assert.Equal("1 short", m.Bring.Single().Note);
             Assert.Equal(new[] { "Factory sources", "Any map" }, m.Find.Select(s => s.Title));

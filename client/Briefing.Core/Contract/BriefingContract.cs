@@ -72,6 +72,8 @@ public sealed class BriefingObjective
     public double? Target { get; set; }
     public bool InferredMap { get; set; }
     public List<BriefingLocation> Locations { get; set; } = new List<BriefingLocation>();
+    // 필요한 열쇠. 묶음은 모두 필요하고 묶음 안에서는 하나만 있으면 된다. 이 필드가 없는 QuestCodex 면 빈 목록.
+    public List<List<BriefingItemRef>> RequiredKeys { get; set; } = new List<List<BriefingItemRef>>();
     // 클라이언트 전용. 레이드 중 LiveProgress 가 끝났다고 표시한 목표. 서버 응답에서는 늘 false.
     public bool Done { get; set; }
 }

@@ -59,6 +59,8 @@ public sealed class GearSnapshot
     public bool StashRead { get; set; }
     public List<GearWeapon> Weapons { get; set; } = new List<GearWeapon>();
     public HashSet<string> Worn { get; set; } = new HashSet<string>();
+    // 장착품과 그 안의 모든 것(주머니, 가방, 열쇠 보관함 포함). 열쇠 탭이 쓴다.
+    public HashSet<string> Carried { get; set; } = new HashSet<string>();
     public HashSet<string> Stash { get; set; } = new HashSet<string>();
     public HashSet<string> StashCalibers { get; set; } = new HashSet<string>();
 }

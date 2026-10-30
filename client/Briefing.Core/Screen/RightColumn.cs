@@ -11,6 +11,7 @@ public enum RightTabKey
     Bring,
     Find,
     Gear,
+    Keys,
 }
 
 // Count 는 필터가 켜져 있으면 걸러진 뒤의 수.
@@ -75,12 +76,13 @@ public sealed class ItemSectionModel
     public string EmptyText { get; }
 }
 
-// 세 탭을 다 계산해 두고 고른 탭만 그린다. 나머지는 탭 숫자에만 쓴다. *Empty 가 있으면 그 탭은 문구만 보인다.
+// 네 탭을 다 계산해 두고 고른 탭만 그린다. 나머지는 탭 숫자에만 쓴다. *Empty 가 있으면 그 탭은 문구만 보인다.
 // FilterText 는 탭 줄 아래 금색 띠 문구이고 필터가 꺼져 있으면 null.
 public sealed class RightColumnModel
 {
     public RightColumnModel(IReadOnlyList<RightTab> tabs, string filterText,
-        IReadOnlyList<ItemSectionModel> bring, string bringEmpty, IReadOnlyList<ItemSectionModel> find, string findEmpty, GearTabModel gear)
+        IReadOnlyList<ItemSectionModel> bring, string bringEmpty, IReadOnlyList<ItemSectionModel> find, string findEmpty, GearTabModel gear,
+        KeysTabModel keys)
     {
         Tabs = tabs;
         FilterText = filterText;
@@ -89,6 +91,7 @@ public sealed class RightColumnModel
         Find = find;
         FindEmpty = findEmpty;
         Gear = gear;
+        Keys = keys;
     }
 
     public IReadOnlyList<RightTab> Tabs { get; }
@@ -98,6 +101,7 @@ public sealed class RightColumnModel
     public IReadOnlyList<ItemSectionModel> Find { get; }
     public string FindEmpty { get; }
     public GearTabModel Gear { get; }
+    public KeysTabModel Keys { get; }
 }
 
 // 규칙은 웹 레이드 준비 화면(RaidView.tsx)과 같다. 준비물은 이 맵 다음 아무 맵에서나, 둘을 섞지 않는다.
@@ -134,14 +138,16 @@ public static class RightColumn
         if (findEmpty != null) find.Clear();
 
         var gearTab = GearTab.Build(response, map, filterQuestId, gear, Name);
+        var keysTab = KeysTab.Build(map, filterQuestId, gear);
         var tabs = new[]
         {
             new RightTab(RightTabKey.Bring, Texts.TabBring, bringCount),
             new RightTab(RightTabKey.Find, Texts.TabFind, findCount),
             new RightTab(RightTabKey.Gear, Texts.TabGear, gearTab.Count),
+            new RightTab(RightTabKey.Keys, Texts.TabKeys, keysTab.Count),
         };
         var filterText = filterQuestId == null ? null : Texts.FilterOnly(filterQuestName ?? Name(filterQuestId));
-        return new RightColumnModel(tabs, filterText, bring, bringEmpty, find, findEmpty, gearTab);
+        return new RightColumnModel(tabs, filterText, bring, bringEmpty, find, findEmpty, gearTab, keysTab);
     }
 
     // 필터는 지금 보이는 펼친 줄의 퀘스트다. ✕ 로 껐으면 없다. 이름은 그 줄에 보이는 것을 쓴다.
