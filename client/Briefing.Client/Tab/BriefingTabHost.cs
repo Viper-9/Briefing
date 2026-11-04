@@ -57,7 +57,7 @@ internal sealed class BriefingTabHost : MonoBehaviour
 
     private IEnumerator AttachWhenReady()
     {
-        // "완료하러 가기"로 연 상인 화면에서 돌아왔으면 브리핑 탭을 다시 고른다. 요청은 여기서 꺼내면 지워진다.
+        // "완료하러 가기"로 연 상인 화면이나 우클릭 검색으로 연 플리마켓에서 돌아왔으면 브리핑 탭을 다시 고른다. 요청은 여기서 꺼내면 지워진다.
         var returnToBriefing = false;
         try { returnToBriefing = TraderJump.TakeReturnRequest(); }
         catch (Exception e) { Log.Warn($"turn in: return request read failed: {e.Message}"); }

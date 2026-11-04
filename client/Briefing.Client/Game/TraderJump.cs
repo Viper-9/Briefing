@@ -28,10 +28,12 @@ internal static class TraderJump
 
     private static bool _running; // 연타로 상인 화면을 여러 번 열지 않게
 
-    // 상인 화면을 닫고 캐릭터 화면으로 돌아오면 브리핑 탭을 다시 고르라는 한 번짜리 요청(우리 탭은 EInventoryTab 이 아니라 게임이
-    // 기억하지 못하고 임무 탭으로 돌아온다). 상인 화면을 실제로 연 시각. 다음 캐릭터 화면 Show 때 BriefingTabHost.AttachWhenReady 가 TakeReturnRequest 로 꺼낸다.
+    // 상인 화면이나 플리마켓을 닫고 캐릭터 화면으로 돌아오면 브리핑 탭을 다시 고르라는 한 번짜리 요청(우리 탭은 EInventoryTab 이 아니라 게임이
+    // 기억하지 못하고 임무 탭으로 돌아온다). 그 화면을 연 시각. 다음 캐릭터 화면 Show 때 BriefingTabHost.AttachWhenReady 가 TakeReturnRequest 로 꺼낸다.
     private const float ReturnRequestSeconds = 600f; // 10분이 지난 요청은 버린다(그사이 다른 경로로 캐릭터 화면을 열었을 수 있다)
     private static float? _returnRequestedAt;
+
+    internal static void RequestReturn() => _returnRequestedAt = Time.realtimeSinceStartup;
 
     // 요청이 있고 10분 이내면 true. 지우지 않는다(Show 와 같은 프레임에 내용을 미리 가릴지 정할 때).
     internal static bool PeekReturnRequest()
@@ -88,7 +90,7 @@ internal static class TraderJump
             var controller = new TraderScreensGroup.TraderScreenController(trader, tradersList, session.Profile, inventoryController,
                 screenController.HealthController, questController, screenController.AchievementsController, session);
             controller.ShowScreen(EScreenState.Queued);
-            _returnRequestedAt = Time.realtimeSinceStartup;
+            RequestReturn();
             _running = true;
             Plugin.Instance.StartCoroutine(SelectWhenReady(controller, trader, questId));
         }
