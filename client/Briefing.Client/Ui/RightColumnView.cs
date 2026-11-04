@@ -317,6 +317,7 @@ internal sealed class RightColumnView
             var resolved = item != null;
             relay.Enter = () => ShowTip((RectTransform)go.transform, model, resolved, questItem, inFind);
             relay.Exit = HideTip;
+            AddFleaMenu(go.GetComponent<Image>(), model.Tpl);
             return (RectTransform)t;
         }
         catch
@@ -403,6 +404,7 @@ internal sealed class RightColumnView
                 s.SetActive(true);
                 var unsubscribe = ItemIcons.Fill(UiKit.Get<Image>(s.transform, UiPaths.SlotIcon), slot.Item);
                 if (unsubscribe != null) _unsubscribe.Add(unsubscribe);
+                AddFleaMenu(s.GetComponent<Image>(), slot.Item?.StringTemplateId);
             });
     }
 
@@ -444,6 +446,7 @@ internal sealed class RightColumnView
         var lead = UiKit.Get<TMP_Text>(t, UiPaths.RuleLead);
         lead.text = rule.Lead ?? "";
         lead.color = rule.Mark == GearMark.Equipped ? HaveGreen : rule.Mark == GearMark.Stash ? StashCyan : PlainText; // 맞는 이름에만 색을 넣는다
+        AddFleaMenu(lead, rule.LeadTpl);
         var tag = UiKit.Get<TMP_Text>(t, UiPaths.RuleTag);
         tag.gameObject.SetActive(rule.Tag != null);
         tag.text = rule.Tag ?? "";
@@ -478,6 +481,7 @@ internal sealed class RightColumnView
             var text = UiKit.Get<TMP_Text>(a.transform, UiPaths.AltText);
             text.text = alt.Name ?? "";
             text.color = MarkColor(alt.Mark); // Unknown 도 칠해야 템플릿의 초록이 남지 않는다
+            AddFleaMenu(text, alt.Tpl);
             a.SetActive(true);
             UiKit.Guard("gear alt mark fit", () => FitMarkToLine(UiKit.Get<Image>(a.transform, UiPaths.AltMark), text));
         }
@@ -493,6 +497,19 @@ internal sealed class RightColumnView
         UiKit.Get<TMP_Text>(go.transform, UiPaths.SpecialLabel).text = line.Label ?? "";
         UiKit.Get<TMP_Text>(go.transform, UiPaths.SpecialText).text = line.Text ?? "";
         go.SetActive(true);
+    }
+
+    // 프리팹의 글자와 슬롯 바탕은 클릭을 받지 않아서 여기서 켠다. tpl 이 없으면(구경, 판정 문구, 빈 슬롯) 그대로 둔다.
+    // 장착 칸도 프리셋을 넘겨 실제 장비가 메뉴에 묶이지 않게 한다. 메뉴가 열리면 칸 말풍선은 닫는다.
+    private void AddFleaMenu(Graphic target, string tpl)
+    {
+        if (string.IsNullOrEmpty(tpl)) return;
+        target.raycastTarget = true;
+        target.gameObject.AddComponent<RightClickRelay>().Click = position =>
+        {
+            HideTip();
+            FleaMenu.Show(ItemIcons.Preset(tpl), position);
+        };
     }
 
     // 한글 폴백 글꼴에 ✓·⚠ 가 없어 번들의 아이콘 그림을 쓴다. Unknown 이면 숨긴다.

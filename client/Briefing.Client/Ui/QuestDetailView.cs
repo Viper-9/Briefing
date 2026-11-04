@@ -163,7 +163,7 @@ internal sealed class QuestDetailView
         UiKit.Guard("objective tracking", () =>
         {
             if (row.GetComponent<Graphic>() == null) row.AddComponent<Image>().color = Color.clear;
-            row.AddComponent<RightClickRelay>().Click = () => _onTrack(line.QuestId, line.ConditionId);
+            row.AddComponent<RightClickRelay>().Click = _ => _onTrack(line.QuestId, line.ConditionId);
         });
     }
 
