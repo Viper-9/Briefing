@@ -21,10 +21,12 @@ internal sealed class QuestDetailView
     private readonly Action<string> _onTurnIn;
     private readonly Action<DetailLine> _onHandover;
     private readonly Func<bool> _handoverBusy;
+    private readonly Action<string, string> _onTrack;
 
     internal QuestDetailView(Transform screenRoot, Action<string> onOpenTasks, Action<string> onTurnIn, Action<DetailLine> onHandover,
-        Func<bool> handoverBusy)
+        Func<bool> handoverBusy, Action<string, string> onTrack)
     {
+        _onTrack = onTrack;
         _onOpenTasks = onOpenTasks;
         _onTurnIn = onTurnIn;
         _onHandover = onHandover;
@@ -53,7 +55,8 @@ internal sealed class QuestDetailView
         _template.SetActive(false);
     }
 
-    internal GameObject Create(Transform parent, QuestDetailModel model)
+    // tracked 는 QuestTracker 를 못 쓰면 null 이고 그때는 우클릭과 표시를 붙이지 않는다.
+    internal GameObject Create(Transform parent, QuestDetailModel model, TrackedSet tracked)
     {
         var go = UnityEngine.Object.Instantiate(_template, parent, false);
         go.name = "Detail_" + model.QuestId;
@@ -79,8 +82,8 @@ internal sealed class QuestDetailView
             var busy = _handoverBusy();
             foreach (var line in model.Lines)
             {
-                if (line.ShowButton) UiKit.Guard("handover line", () => AddHandover(handoverTemplate, line, busy));
-                else UiKit.Guard("objective line", () => AddObjective(objectiveTemplate, line));
+                if (line.ShowButton) UiKit.Guard("handover line", () => AddHandover(handoverTemplate, line, busy, tracked));
+                else UiKit.Guard("objective line", () => AddObjective(objectiveTemplate, line, tracked));
             }
             UiKit.Child(d, UiPaths.DetailObjectives).gameObject.SetActive(model.Lines.Count > 0);
 
@@ -115,14 +118,14 @@ internal sealed class QuestDetailView
     }
 
     // 끝난 줄은 글과 수치를 아이템 이름 줄과 같은 흐린 색으로 하고 마커 자리에 체크를 켠다.
-    private static void AddObjective(GameObject template, DetailLine line)
+    private void AddObjective(GameObject template, DetailLine line, TrackedSet tracked)
     {
         var go = UnityEngine.Object.Instantiate(template, template.transform.parent, false);
         go.name = "Objective_" + line.ConditionId;
         var t = go.transform;
         var done = line.Kind == DetailLineKind.Done;
         var text = UiKit.Get<TMP_Text>(t, UiPaths.ObjectiveText);
-        text.text = line.Text ?? "";
+        text.text = LineText(line, tracked);
         var items = UiKit.Get<TMP_Text>(t, UiPaths.ObjectiveItems);
         SetItems(items, line.Items);
 
@@ -141,7 +144,27 @@ internal sealed class QuestDetailView
         pin.color = !done && line.Marker.HasValue ? MarkerTone.Ink : Color.clear;
         UiKit.Get<Image>(t, UiPaths.ObjectiveCheck).gameObject.SetActive(done);
 
+        AddTracking(go, line, tracked);
         go.SetActive(true);
+    }
+
+    // 펼침 블록은 바탕이 어두워 QuestTracker 색을 그대로 쓴다. 글은 줄바꿈되므로 잘리지 않는다.
+    private static string LineText(DetailLine line, TrackedSet tracked)
+    {
+        var text = line.Text ?? "";
+        if (tracked == null || !tracked.HasCondition(line.QuestId, line.ConditionId)) return text;
+        return $"{text} <color=#{ColorUtility.ToHtmlStringRGB(tracked.Color)}>{tracked.ConditionLabel}</color>";
+    }
+
+    // 줄의 글과 아이콘은 레이캐스트를 끄고 바탕도 없어서 우클릭을 받도록 투명 Image 를 붙인다. 건네주기 버튼 위 우클릭은 버튼이 받는다.
+    private void AddTracking(GameObject row, DetailLine line, TrackedSet tracked)
+    {
+        if (tracked == null || string.IsNullOrEmpty(line.ConditionId)) return;
+        UiKit.Guard("objective tracking", () =>
+        {
+            if (row.GetComponent<Graphic>() == null) row.AddComponent<Image>().color = Color.clear;
+            row.AddComponent<RightClickRelay>().Click = () => _onTrack(line.QuestId, line.ConditionId);
+        });
     }
 
     // 값이 없으면 꺼서 자리를 접는다.
@@ -152,18 +175,19 @@ internal sealed class QuestDetailView
     }
 
     // 지금 낼 수 있고 다른 제출이 진행 중이 아닐 때만 버튼을 누를 수 있다.
-    private void AddHandover(GameObject template, DetailLine line, bool busy)
+    private void AddHandover(GameObject template, DetailLine line, bool busy, TrackedSet tracked)
     {
         var go = UnityEngine.Object.Instantiate(template, template.transform.parent, false);
         go.name = "Handover_" + line.ConditionId;
         var t = go.transform;
-        UiKit.Get<TMP_Text>(t, UiPaths.HandoverText).text = line.Text ?? "";
+        UiKit.Get<TMP_Text>(t, UiPaths.HandoverText).text = LineText(line, tracked);
         SetItems(UiKit.Get<TMP_Text>(t, UiPaths.HandoverItems), line.Items);
         UiKit.Get<Image>(t, UiPaths.HandoverCheck).gameObject.SetActive(false);
         var value = UiKit.Get<TMP_Text>(t, UiPaths.HandoverValue);
         value.gameObject.SetActive(line.Progress != null);
         value.text = line.Progress ?? "";
 
+        AddTracking(go, line, tracked);
         go.SetActive(true);
 
         // 게임 버튼은 게임이 글자를 채우니 우리 버튼일 때만 글자를 넣는다.
