@@ -19,11 +19,11 @@ public class Plugin : BaseUnityPlugin
     {
         Instance = this;
         Log.Source = Logger;
-        SideMargin = Config.Bind("Layout", "Side margin", 20f, "브리핑 패널의 좌우 여백(기준 해상도 단위). 탭을 다시 열 때 적용된다");
-        TopMargin = Config.Bind("Layout", "Top margin", 8f, "탭 줄 아래쪽 끝과 패널 위쪽 사이 여백(기준 해상도 단위). 탭을 다시 열 때 적용된다");
-        BottomMargin = Config.Bind("Layout", "Bottom margin", 40f, "화면 아래쪽 메뉴 막대를 피하는 하단 여백(기준 해상도 단위). 탭을 다시 열 때 적용된다");
-        LeftColumnWidth = Config.Bind("Layout", "Left column width", 0f, "왼쪽 열(퀘스트 목록) 폭(기준 해상도 단위). 0 = 기본 폭(540). 열 사이 손잡이를 끌면 저장된다");
-        RightColumnWidth = Config.Bind("Layout", "Right column width", 0f, "오른쪽 열 폭(기준 해상도 단위). 0 = 기본 폭(470). 열 사이 손잡이를 끌면 저장된다");
+        SideMargin = Config.Bind("Layout", "Side margin", 20f, "Left and right margin of the briefing panel, in reference resolution units. Applied when the tab is reopened.");
+        TopMargin = Config.Bind("Layout", "Top margin", 8f, "Gap between the bottom of the tab bar and the top of the panel, in reference resolution units. Applied when the tab is reopened.");
+        BottomMargin = Config.Bind("Layout", "Bottom margin", 40f, "Bottom margin that keeps the panel clear of the menu bar at the bottom of the screen, in reference resolution units. Applied when the tab is reopened.");
+        LeftColumnWidth = Config.Bind("Layout", "Left column width", 0f, "Width of the left column (quest list), in reference resolution units. 0 = default (540). Saved when you drag the handle between the columns.");
+        RightColumnWidth = Config.Bind("Layout", "Right column width", 0f, "Width of the right column, in reference resolution units. 0 = default (470). Saved when you drag the handle between the columns.");
         Tab.BriefingTabHost.ViewFactory = () => new Ui.BundleBriefingView();
         var harmony = new Harmony("com.viper.briefing");
         // 하나가 실패해도 나머지는 걸리도록 클래스마다 따로 등록한다.
