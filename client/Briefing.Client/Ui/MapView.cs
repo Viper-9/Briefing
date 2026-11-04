@@ -196,6 +196,11 @@ internal sealed class MapView
             Precache(null); // 그릴 층이 없으니 바로 미리 그려 두기를 시작한다
             return;
         }
+        if (_svg == null)
+        {
+            ShowMessage(Texts.MapUnavailable); // 게임 언어를 바꿨을 수 있어 매번 다시 쓴다
+            return;
+        }
         if (_def == null) return; // 불러오는 중이거나 실패한 문구는 Load 쪽이 띄운다
         SyncToggles();
         MapSceneModel scene = null;
@@ -317,11 +322,7 @@ internal sealed class MapView
         ClearMap();
         if (folder == null) return;
         _svg = SvgLoader.Get();
-        if (_svg == null)
-        {
-            ShowMessage(Texts.MapUnavailable); // 다시 열어도 바뀌지 않으므로 Retry 할 것이 없다
-            return;
-        }
+        if (_svg == null) return; // 문구는 Render 가 띄운다. 다시 열어도 바뀌지 않으므로 Retry 할 것이 없다
         ShowMessage(Texts.MapLoading);
         // 정의가 캐시돼 있으면 LoadAsync 가 여기서 바로 끝나고 부른 Render 가 이어서 그리므로 onChanged 를 부르지 않는다.
         _starting = true;

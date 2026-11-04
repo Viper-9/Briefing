@@ -34,6 +34,9 @@ internal sealed class BundleBriefingView : IBriefingView
     private bool _hotFromList;      // HotQuestId 가 목록 줄에서 왔다. 목록을 다시 그리면 그 줄이 사라지므로 지운다
     private TraderFaces _faces;
     private QuestBridge _bridge;
+    private TMP_Text _headerTrader;
+    private TMP_Text _headerQuest;
+    private TMP_Text _headerProgress;
     // 게임 퀘스트에서 읽은 제출·찾기·완료 가능 목록. 조건 판정이 인벤토리를 훑어 수백 ms 걸리므로
     // 펼침, 묶음 접기, 맵 고르기에서는 다시 읽지 않는다. _gameStale 이면 다음 그리기에서 새로 읽는다.
     private IReadOnlyList<HandoverGoal> _goals;
@@ -50,9 +53,9 @@ internal sealed class BundleBriefingView : IBriefingView
         {
             var root = go.transform;
             UseGameLanguage(); // 문구를 쓰기 전에 언어부터 맞춘다
-            UiKit.Get<TMP_Text>(root, UiPaths.HeaderTrader).text = Texts.HeaderTrader;
-            UiKit.Get<TMP_Text>(root, UiPaths.HeaderQuest).text = Texts.HeaderQuest;
-            UiKit.Get<TMP_Text>(root, UiPaths.HeaderProgress).text = Texts.HeaderProgress;
+            _headerTrader = UiKit.Get<TMP_Text>(root, UiPaths.HeaderTrader);
+            _headerQuest = UiKit.Get<TMP_Text>(root, UiPaths.HeaderQuest);
+            _headerProgress = UiKit.Get<TMP_Text>(root, UiPaths.HeaderProgress);
 
             _faces = new TraderFaces(() => GameRefs.ProfileOf(screen));
             _gear = new GearReader(() => GameRefs.ProfileOf(screen));
@@ -146,6 +149,12 @@ internal sealed class BundleBriefingView : IBriefingView
     private void RenderAll(bool scrollToTop, bool inRaid)
     {
         UseGameLanguage();
+        UiKit.Guard("render headers", () =>
+        {
+            _headerTrader.text = Texts.HeaderTrader;
+            _headerQuest.text = Texts.HeaderQuest;
+            _headerProgress.text = Texts.HeaderProgress;
+        });
         if (_hotFromList)
         {
             // 목록 줄을 다시 만들면 올려 둔 줄이 사라져 내림 알림이 오지 않는다. 마우스 아래 새 줄이 다음 프레임에 다시 알린다.
