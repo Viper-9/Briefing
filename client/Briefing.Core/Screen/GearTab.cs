@@ -6,11 +6,12 @@ using Briefing.Core.Contract;
 namespace Briefing.Core.Screen;
 
 // 장비 탭의 조건 줄 하나. Key("questId/줄 번호")로 "외 N종" 상자가 열려 있는지 기억한다. 착용 금지 줄은 Warn 이라 라벨이 주황.
-// More 가 null 이면 상자도 없다.
+// More 가 null 이면 상자도 없다. LeadTpl 이 null 이면 대표 이름에 우클릭 메뉴가 없다.
 public sealed class GearLineModel
 {
-    public GearLineModel(string key, string label, bool warn, GearMark mark, string lead, string tag, string more, IReadOnlyList<GearAlt> alternatives)
+    public GearLineModel(string key, string label, bool warn, GearMark mark, string lead, string tag, string more, IReadOnlyList<GearAlt> alternatives, string leadTpl = null)
     {
+        LeadTpl = leadTpl;
         Key = key;
         Label = label;
         Warn = warn;
@@ -26,6 +27,7 @@ public sealed class GearLineModel
     public bool Warn { get; }
     public GearMark Mark { get; }
     public string Lead { get; }
+    public string LeadTpl { get; }
     public string Tag { get; }
     public string More { get; }
     public IReadOnlyList<GearAlt> Alternatives { get; }
@@ -133,7 +135,7 @@ public static class GearTab
             var forbidden = row.Label == GearCheck.Forbidden;
             var count = forbidden ? row.Names.Count : row.Names.Count - 1;
             var more = count <= 0 ? null : forbidden ? Texts.ListCount(count) : Texts.MoreAlternatives(count);
-            lines.Add(new GearLineModel(questId + "/" + i, Texts.GearLabel(row.Label), forbidden, check.Mark, check.Lead, check.Tag, more, check.Alternatives));
+            lines.Add(new GearLineModel(questId + "/" + i, Texts.GearLabel(row.Label), forbidden, check.Mark, check.Lead, check.Tag, more, check.Alternatives, check.LeadTpl));
         }
         var verdict = GearCheck.Overall(lines.Select(l => l.Mark));
         return new GearBlockModel(questId, questName(questId), verdict, lines, Array.Empty<SpecialLineModel>());
@@ -153,7 +155,7 @@ public static class GearTab
     private static GearLineModel Line(string key, string label, GearRowCheck check)
     {
         var count = check.Alternatives.Count - 1;
-        return new GearLineModel(key, label, false, check.Mark, check.Lead, check.Tag, count <= 0 ? null : Texts.MoreAlternatives(count), check.Alternatives);
+        return new GearLineModel(key, label, false, check.Mark, check.Lead, check.Tag, count <= 0 ? null : Texts.MoreAlternatives(count), check.Alternatives, check.LeadTpl);
     }
 
     // 라벨과 이름 목록이 같으면 같은 줄. build 줄은 무기 조건까지 같아야 한다.

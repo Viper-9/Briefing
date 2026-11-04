@@ -258,7 +258,7 @@ internal sealed class QuestListView
     // 최소 폭을 글 폭으로 잡아 이름만 줄어들게 한다. 복제본이 마커, 손 아이콘 앞에서 자리를 차지하므로 겹치지 않고 줄 높이도 그대로다.
     private void AddTracking(GameObject row, TMP_Text questName, string questId, bool selected)
     {
-        row.AddComponent<RightClickRelay>().Click = () => _onTrack(questId, null);
+        row.AddComponent<RightClickRelay>().Click = _ => _onTrack(questId, null);
         if (!_tracked.HasQuest(questId)) return;
         var label = UnityEngine.Object.Instantiate(questName, questName.transform.parent, false);
         label.name = "Tracked";
