@@ -66,32 +66,36 @@ public sealed class GearSnapshot
 // "외 N종" 상자의 한 줄. 맞는 대안은 Equipped·Stash, 착용 금지 목록에서 지금 입은 것은 Missing, 나머지는 Unknown.
 public sealed class GearAlt
 {
-    public GearAlt(string name, GearMark mark)
+    public GearAlt(string name, GearMark mark, string tpl = null)
     {
         Name = name;
         Mark = mark;
+        Tpl = tpl;
     }
 
     public string Name { get; }
     public GearMark Mark { get; }
+    public string Tpl { get; }
 }
 
 // Lead 는 줄에 보일 이름이다. ✓·◐ 면 맞는 첫 대안, ⚠ 면 첫 대안, 착용 금지는 판정 문구.
-// Alternatives 는 상자에 넣을 전체 목록이고 맞는 것이 먼저 온다.
+// Alternatives 는 상자에 넣을 전체 목록이고 맞는 것이 먼저 온다. LeadTpl 은 Lead 가 아이템 이름일 때만 있다.
 public sealed class GearRowCheck
 {
-    public GearRowCheck(GearMark mark, string lead, string tag, IReadOnlyList<GearAlt> alternatives)
+    public GearRowCheck(GearMark mark, string lead, string tag, IReadOnlyList<GearAlt> alternatives, string leadTpl = null)
     {
         Mark = mark;
         Lead = lead;
         Tag = tag;
         Alternatives = alternatives;
+        LeadTpl = leadTpl;
     }
 
     public GearMark Mark { get; }
     public string Lead { get; }
     public string Tag { get; }
     public IReadOnlyList<GearAlt> Alternatives { get; }
+    public string LeadTpl { get; }
 }
 
 // build 줄의 판정. Weapon 은 무기 조건이 없으면 null 이고 WeaponLabel 은 weapon 이나 caliber.
@@ -129,11 +133,12 @@ public static class GearCheck
         var names = row.Names.Select(n => DisplayName(row.Label, n)).ToList();
         if (row.Label == Forbidden) return ForbiddenRow(row, names, gear);
         var known = gear != null && gear.EquipmentRead && IsKnownLabel(row.Label);
-        if (!known) return Unmarked(names);
+        var firstTpls = FirstTpls(row);
+        if (!known) return Unmarked(names, firstTpls);
 
         var marks = new List<GearMark>();
         for (var i = 0; i < names.Count; i++) marks.Add(AltMark(row, i, gear));
-        return Assemble(names, marks);
+        return Assemble(names, marks, firstTpls);
     }
 
     // build 줄. 부착물은 무기 조건에 맞는 장착 무기에 달려 있어야 ✓ 이고, 보관함은 총과 따로 있어도 ◐ 로 본다.
@@ -144,7 +149,8 @@ public static class GearCheck
         var weapon = weaponRow == null ? null : Row(weaponRow, gear);
         row = DistinctMods(row);
         var names = row.Names.Select(n => n?.Trim() ?? "").ToList();
-        if (gear == null || !gear.EquipmentRead) return new GearBuildCheck(weaponRow?.Label, weapon, Unmarked(names), null);
+        var firstTpls = FirstTpls(row);
+        if (gear == null || !gear.EquipmentRead) return new GearBuildCheck(weaponRow?.Label, weapon, Unmarked(names, firstTpls), null);
 
         var fits = gear.Weapons.Where(w => Fits(row, w)).ToList();
         var marks = new List<GearMark>();
@@ -155,7 +161,7 @@ public static class GearCheck
             else if (fits.Any(w => tpls.All(w.Parts.Contains))) marks.Add(GearMark.Equipped);
             else marks.Add(gear.StashRead && tpls.All(gear.Stash.Contains) ? GearMark.Stash : GearMark.Missing);
         }
-        var mods = Assemble(names, marks);
+        var mods = Assemble(names, marks, firstTpls);
         return new GearBuildCheck(weaponRow?.Label, weapon, mods, mods.Mark == GearMark.Equipped ? null : BuildReason(row, gear, fits));
     }
 
@@ -218,20 +224,25 @@ public static class GearCheck
         return wrong.Count > 0 ? Texts.BuildNotAccepted(string.Join(", ", wrong)) : Texts.BuildNoMods;
     }
 
-    private static GearRowCheck Unmarked(List<string> names)
-        => new GearRowCheck(GearMark.Unknown, names.FirstOrDefault() ?? "", null, names.Select(n => new GearAlt(n, GearMark.Unknown)).ToList());
+    // 이름과 짝인 tpl. 묶음이면 첫 번째를 쓰고 구경처럼 tpl 이 없는 줄은 null.
+    private static List<string> FirstTpls(BriefingGearRow row)
+        => Enumerable.Range(0, row.Names.Count).Select(i => i < row.Tpls.Count ? row.Tpls[i]?.FirstOrDefault() : null).ToList();
+
+    private static GearRowCheck Unmarked(List<string> names, List<string> tpls)
+        => new GearRowCheck(GearMark.Unknown, names.FirstOrDefault() ?? "", null,
+            names.Select((n, i) => new GearAlt(n, GearMark.Unknown, tpls[i])).ToList(), tpls.FirstOrDefault());
 
     // 대안별 판정을 줄 판정으로 묶는다. 맞는 대안이 먼저 오고, 대표 이름은 ✓·◐ 면 맞는 첫 대안, ⚠ 면 첫 대안.
-    private static GearRowCheck Assemble(List<string> names, List<GearMark> marks)
+    private static GearRowCheck Assemble(List<string> names, List<GearMark> marks, List<string> tpls)
     {
         var mark = marks.Contains(GearMark.Equipped) ? GearMark.Equipped : marks.Contains(GearMark.Stash) ? GearMark.Stash : GearMark.Missing;
         var leadIndex = mark == GearMark.Missing ? 0 : marks.IndexOf(mark);
         var alts = new List<GearAlt>();
         for (var i = 0; i < names.Count; i++)
-            if (marks[i] != GearMark.Missing) alts.Add(new GearAlt(names[i], marks[i]));
+            if (marks[i] != GearMark.Missing) alts.Add(new GearAlt(names[i], marks[i], tpls[i]));
         for (var i = 0; i < names.Count; i++)
-            if (marks[i] == GearMark.Missing) alts.Add(new GearAlt(names[i], GearMark.Unknown));
-        return new GearRowCheck(mark, names.Count > 0 ? names[leadIndex] : "", Tag(mark), alts);
+            if (marks[i] == GearMark.Missing) alts.Add(new GearAlt(names[i], GearMark.Unknown, tpls[i]));
+        return new GearRowCheck(mark, names.Count > 0 ? names[leadIndex] : "", Tag(mark), alts, names.Count > 0 ? tpls[leadIndex] : null);
     }
 
     // ⚠ 가 하나라도 있으면 ⚠, 없고 ◐ 가 있으면 ◐, 나머지는 ✓. Unknown 줄은 빼고 보며 남는 게 없으면 Unknown.
@@ -282,19 +293,21 @@ public static class GearCheck
     }
 
     // 착용 금지 목록 중 입은 게 없으면 ✓, 있으면 ⚠ 와 처음 찾은 아이템 이름. 보관함은 보지 않고 태그도 없다.
+    // 대표 줄은 판정을 보여 주는 자리라 LeadTpl 을 두지 않고 목록의 각 줄에만 tpl 을 넣는다.
     private static GearRowCheck ForbiddenRow(BriefingGearRow row, List<string> names, GearSnapshot gear)
     {
+        var firstTpls = FirstTpls(row);
         if (gear == null || !gear.EquipmentRead)
             return new GearRowCheck(GearMark.Unknown, names.FirstOrDefault() ?? "", null,
-                names.Select(n => new GearAlt(n, GearMark.Unknown)).ToList());
+                names.Select((n, i) => new GearAlt(n, GearMark.Unknown, firstTpls[i])).ToList());
         var worn = new List<int>();
         for (var i = 0; i < names.Count; i++)
         {
             var tpls = i < row.Tpls.Count ? row.Tpls[i] : null;
             if (tpls != null && tpls.Any(gear.Worn.Contains)) worn.Add(i);
         }
-        var alts = worn.Select(i => new GearAlt(names[i], GearMark.Missing))
-            .Concat(Enumerable.Range(0, names.Count).Where(i => !worn.Contains(i)).Select(i => new GearAlt(names[i], GearMark.Unknown)))
+        var alts = worn.Select(i => new GearAlt(names[i], GearMark.Missing, firstTpls[i]))
+            .Concat(Enumerable.Range(0, names.Count).Where(i => !worn.Contains(i)).Select(i => new GearAlt(names[i], GearMark.Unknown, firstTpls[i])))
             .ToList();
         return worn.Count == 0
             ? new GearRowCheck(GearMark.Equipped, Texts.ForbiddenClear, null, alts)
