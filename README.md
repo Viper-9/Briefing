@@ -18,6 +18,7 @@ exactly as QuestCodex reads them.
 - SPT `~4.1.6`
 - **[QuestCodex](https://github.com/Viper-9/QuestCodex) 1.9.0 or later** (server mod). It provides the briefing data
   and the map files. Without it, the tab only shows a "QuestCodex is required" notice.
+- Optional: DrakiaXYZ's **QuestTracker**, to [track quests from the briefing](#tracking-quests).
 
 ## Installation
 
@@ -83,6 +84,18 @@ Quests with a Kappa or Lightkeeper badge get a line such as "Needed to unlock Li
 - The expanded quest is highlighted on the map and the right column narrows to that quest (see
   [Selected quest only](#selected-quest-only) below).
 
+### Tracking quests
+
+![Tracked quest and objectives](media/quest-tracked.png)
+
+With DrakiaXYZ's **QuestTracker** installed (checked with 1.7.0), right-click a quest row or an expanded objective to
+track or untrack it.
+
+- Tracked quests show **Tracked!** next to the name and tracked objectives show **(Tracked!)**. The list order doesn't
+  change.
+- Tracking is stored by QuestTracker itself, so the tasks tab, trader screens and raid panel show the same state.
+- Without QuestTracker, right-clicking a quest does nothing and everything else works as usual.
+
 ### Map
 
 <img src="media/map.png" width="480" alt="Map">
@@ -121,6 +134,21 @@ Hover a cell for the full name, the alternatives and the quests that need it.
   - ✓ Equipped · ◐ In stash · ⚠ Missing
   - Long lists of alternatives collapse into `+N more ▼`; click it to see them all.
 - **Special conditions**: complete in one raid, survive and extract, extract via a specific exit and so on.
+
+### Item menu
+
+<img src="media/right-gear-menu.png" width="420" alt="Item menu in the Gear tab">
+
+<img src="media/right-collect-menu.png" width="420" alt="Item menu in the Collect tab">
+
+Right-click an item in Supplies, Collect or Gear to open the same menu the game shows in the handbook: flea market
+searches (**FILTER BY ITEM · LINKED SEARCH · REQUIRED SEARCH**), **ADD TO WISHLIST**, and **EDIT BUILD** for weapons.
+The entries depend on the item.
+
+- In the Gear tab this works on current gear slots, item names and every line in the alternatives list.
+- Closing the flea market after a search brings you back to the briefing tab.
+- **EDIT BUILD** starts from the default preset, so it can't change the gear you're wearing.
+- Quest items have no menu, and the menu is off during a raid.
 
 ### Selected quest only
 
