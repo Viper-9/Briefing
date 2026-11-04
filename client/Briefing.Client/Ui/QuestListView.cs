@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Briefing.Core.Screen;
+using Briefing.Game;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,6 +29,8 @@ internal sealed class QuestListView
     private readonly Action _onToggle;
     private readonly Action<string, string> _onQuestClick;
     private readonly Action<string> _onHot;
+    private readonly Action<string, string> _onTrack;
+    private TrackedSet _tracked; // 이번 그리기에서 읽은 트래킹 상태. QuestTracker 를 못 쓰면 null
     private readonly Color _rowColor;
     private readonly List<GameObject> _rows = new List<GameObject>();
     private readonly Dictionary<string, (Image Bg, Color Base, bool Selected, Transform Row)> _hereRows =
@@ -35,10 +38,12 @@ internal sealed class QuestListView
     private readonly Dictionary<(string, string), RectTransform> _rowsByKey = new Dictionary<(string, string), RectTransform>(); // (묶음, questId)
 
     private static readonly Color RowHot = UiKit.Hex("#2b3030");
+    private static readonly Color TrackedOnSelected = UiKit.Hex("#004857"); // 펼친 줄은 바탕이 밝아 QuestTracker 의 청록이 잘 안 보인다
 
     internal QuestListView(Transform screenRoot, TraderFaces faces, QuestDetailView detail, Action onToggle,
-        Action<string, string> onQuestClick, Action<string> onHot)
+        Action<string, string> onQuestClick, Action<string> onHot, Action<string, string> onTrack)
     {
+        _onTrack = onTrack;
         _faces = faces;
         _detail = detail;
         _onToggle = onToggle;
@@ -76,9 +81,10 @@ internal sealed class QuestListView
 
     internal void SetVisible(bool visible) => _list.SetActive(visible);
 
-    internal void Render(LeftColumnModel model, bool scrollToTop)
+    internal void Render(LeftColumnModel model, bool scrollToTop, TrackedSet tracked)
     {
         Clear();
+        _tracked = tracked;
         Game.QuestListColors.Refresh();
         if (model.TurnIn != null) AddSection(model.TurnIn, model.Expanded);
         if (model.Here != null) AddSection(model.Here, model.Expanded);
@@ -164,7 +170,7 @@ internal sealed class QuestListView
             var selected = expanded != null && expanded.SectionKey == section.Key && expanded.QuestId == row.QuestId;
             AddQuest(section.Key, row, selected);
             if (selected)
-                UiKit.Guard("render quest detail", () => _rows.Add(_detail.Create(_content, expanded)));
+                UiKit.Guard("render quest detail", () => _rows.Add(_detail.Create(_content, expanded, _tracked)));
         }
     }
 
@@ -195,7 +201,9 @@ internal sealed class QuestListView
                 LightMarkers(null);
             };
         }
-        UiKit.Get<TMP_Text>(t, UiPaths.QuestName).text = row.Name ?? "";
+        var questName = UiKit.Get<TMP_Text>(t, UiPaths.QuestName);
+        questName.text = row.Name ?? "";
+        if (_tracked != null) UiKit.Guard("quest tracking", () => AddTracking(go, questName, questId, selected));
         // 그림을 못 구하면 손 아이콘만 꺼 둔다.
         var hand = UiKit.Get<Image>(t, UiPaths.QuestHandIcon);
         hand.gameObject.SetActive(false);
@@ -244,6 +252,22 @@ internal sealed class QuestListView
             value.color = dark;
             UiKit.Get<TMP_Text>(t, UiPaths.QuestSummary).color = Color.Lerp(dark, baseColor, 0.35f); // 요약은 조금 흐리게
         }
+    }
+
+    // 이름은 폭이 모자라면 말줄임으로 줄어서 같은 글에 붙이면 표시가 함께 잘린다. 그래서 이름을 복제해 바로 뒤에 두고
+    // 최소 폭을 글 폭으로 잡아 이름만 줄어들게 한다. 복제본이 마커, 손 아이콘 앞에서 자리를 차지하므로 겹치지 않고 줄 높이도 그대로다.
+    private void AddTracking(GameObject row, TMP_Text questName, string questId, bool selected)
+    {
+        row.AddComponent<RightClickRelay>().Click = () => _onTrack(questId, null);
+        if (!_tracked.HasQuest(questId)) return;
+        var label = UnityEngine.Object.Instantiate(questName, questName.transform.parent, false);
+        label.name = "Tracked";
+        label.transform.SetSiblingIndex(questName.transform.GetSiblingIndex() + 1);
+        label.overflowMode = TextOverflowModes.Overflow;
+        label.text = _tracked.QuestLabel;
+        label.color = selected ? TrackedOnSelected : _tracked.Color;
+        var layout = label.GetComponent<LayoutElement>();
+        layout.minWidth = layout.preferredWidth = Mathf.Ceil(label.GetPreferredValues(label.text).x);
     }
 
     // 게임 색표의 반투명 바탕을 줄 바탕 위에 미리 섞어서 목록 바탕이 비치지 않게 한다.

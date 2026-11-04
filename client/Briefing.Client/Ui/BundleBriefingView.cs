@@ -34,6 +34,10 @@ internal sealed class BundleBriefingView : IBriefingView
     private bool _hotFromList;      // HotQuestId 가 목록 줄에서 왔다. 목록을 다시 그리면 그 줄이 사라지므로 지운다
     private TraderFaces _faces;
     private QuestBridge _bridge;
+    private QuestTrackerLink _tracker;
+    private TMP_Text _headerTrader;
+    private TMP_Text _headerQuest;
+    private TMP_Text _headerProgress;
     // 게임 퀘스트에서 읽은 제출·찾기·완료 가능 목록. 조건 판정이 인벤토리를 훑어 수백 ms 걸리므로
     // 펼침, 묶음 접기, 맵 고르기에서는 다시 읽지 않는다. _gameStale 이면 다음 그리기에서 새로 읽는다.
     private IReadOnlyList<HandoverGoal> _goals;
@@ -50,17 +54,18 @@ internal sealed class BundleBriefingView : IBriefingView
         {
             var root = go.transform;
             UseGameLanguage(); // 문구를 쓰기 전에 언어부터 맞춘다
-            UiKit.Get<TMP_Text>(root, UiPaths.HeaderTrader).text = Texts.HeaderTrader;
-            UiKit.Get<TMP_Text>(root, UiPaths.HeaderQuest).text = Texts.HeaderQuest;
-            UiKit.Get<TMP_Text>(root, UiPaths.HeaderProgress).text = Texts.HeaderProgress;
+            _headerTrader = UiKit.Get<TMP_Text>(root, UiPaths.HeaderTrader);
+            _headerQuest = UiKit.Get<TMP_Text>(root, UiPaths.HeaderQuest);
+            _headerProgress = UiKit.Get<TMP_Text>(root, UiPaths.HeaderProgress);
 
             _faces = new TraderFaces(() => GameRefs.ProfileOf(screen));
             _gear = new GearReader(() => GameRefs.ProfileOf(screen));
             _mapBar = new MapBarView(root, PickMap);
             _bridge = new QuestBridge(screen);
+            _tracker = new QuestTrackerLink(screen);
             var detail = new QuestDetailView(root, questId => TasksJump.Open(_screen, questId),
-                questId => TraderJump.Open(_screen, questId), line => _ = HandoverAndRefreshAsync(line), () => _bridge.Busy);
-            _list = new QuestListView(root, _faces, detail, () => Render(false), OnQuestClick, OnRowHot);
+                questId => TraderJump.Open(_screen, questId), line => _ = HandoverAndRefreshAsync(line), () => _bridge.Busy, ToggleTracked);
+            _list = new QuestListView(root, _faces, detail, () => Render(false), OnQuestClick, OnRowHot, ToggleTracked);
             _status = new StatusBarView(root, () => _ = RefreshAndRenderAsync());
             UiKit.Guard("map view", () => _map = new MapView(root, RenderMap, OnMarkerHot, OnMarkerClick)); // 실패하면 지도만 빠진다
             UiKit.Guard("column resize", () => _columns = new ColumnResize(root)); // 실패하면 손잡이만 빠진다
@@ -146,6 +151,12 @@ internal sealed class BundleBriefingView : IBriefingView
     private void RenderAll(bool scrollToTop, bool inRaid)
     {
         UseGameLanguage();
+        UiKit.Guard("render headers", () =>
+        {
+            _headerTrader.text = Texts.HeaderTrader;
+            _headerQuest.text = Texts.HeaderQuest;
+            _headerProgress.text = Texts.HeaderProgress;
+        });
         if (_hotFromList)
         {
             // 목록 줄을 다시 만들면 올려 둔 줄이 사라져 내림 알림이 오지 않는다. 마우스 아래 새 줄이 다음 프레임에 다시 알린다.
@@ -216,10 +227,12 @@ internal sealed class BundleBriefingView : IBriefingView
             return;
         }
         UiKit.Guard("render map bar", () => _mapBar.Render(model.Chips));
+        TrackedSet tracked = null;
+        UiKit.Guard("read tracked quests", () => tracked = _tracker.Read()); // 다른 탭에서 바꾼 값도 그릴 때마다 여기서 읽는다
         UiKit.Guard("render list", () =>
         {
             _list.SetVisible(true);
-            _list.Render(model, scrollToTop);
+            _list.Render(model, scrollToTop, tracked);
             _list.SetHot(BriefingState.HotQuestId); // 마커에 마우스를 올린 채 다시 그렸으면 줄 강조를 되살린다
         });
         RenderMap();
@@ -317,6 +330,12 @@ internal sealed class BundleBriefingView : IBriefingView
             var emphasis = MapScene.EmphasisQuest(BriefingState.HotQuestId, BriefingState.ExpandedSection, BriefingState.ExpandedQuestId, shown);
             _map.Render(response, LeftColumn.SelectedMap(response, BriefingState.SelectedMapKey), shown, emphasis);
         });
+    }
+
+    // conditionId 가 null 이면 퀘스트를 켜고 끈다. 인벤토리와 무관해서 _gameStale 은 켜지 않는다.
+    private void ToggleTracked(string questId, string conditionId)
+    {
+        if (_tracker.Toggle(questId, conditionId)) Render(false);
     }
 
     // 맵 묶음 줄을 펼쳤으면 지도를 그 퀘스트의 층과 위치로 옮긴다. 확대는 하지 않는다.
