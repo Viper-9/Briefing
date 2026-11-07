@@ -53,24 +53,13 @@ internal sealed class RightColumnView
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private readonly List<Action> _unsubscribe = new List<Action>();
     private readonly List<ItemGridView> _grids = new List<ItemGridView>();
-    private readonly RectTransform _screen;
-    private readonly RectTransform _tip;
-    private readonly TMP_Text _tipTitle;
-    private readonly TMP_Text _tipKind;
-    private readonly Color _tipDim; // 프리팹 Alt 줄의 흐린 글자색
-    private readonly TMP_Text _tipAlt;
-    private readonly TMP_Text _tipCount;
-    private readonly TMP_Text _tipQuests;
+    private readonly ScreenTip _tip;
     private RightTabKey? _drawnTab;
 
-    private const float TipGap = 6f;      // 칸 왼쪽 끝과 말풍선 오른쪽 끝 사이
-    private const float TipMinWidth = 140f;
-    private const float TipMaxWidth = 320f;
-    private const float TipPadding = 20f;  // 프리팹 RightTooltip 좌우 여백 10 + 10
-
-    // 경로가 없으면 예외. 부르는 쪽이 Guard 로 감싸 오른쪽 열만 빠지게 한다.
-    internal RightColumnView(Transform screenRoot, Action onChanged)
+    // 경로가 없으면 예외. 부르는 쪽이 Guard 로 감싸 오른쪽 열만 빠지게 한다. 말풍선은 1열과 같이 쓴다.
+    internal RightColumnView(Transform screenRoot, ScreenTip tip, Action onChanged)
     {
+        _tip = tip ?? throw new InvalidOperationException("RightTooltip is missing");
         _onChanged = onChanged;
         foreach (var (key, path) in new[] { (RightTabKey.Bring, UiPaths.TabBring), (RightTabKey.Find, UiPaths.TabFind), (RightTabKey.Gear, UiPaths.TabGear) })
         {
@@ -147,15 +136,6 @@ internal sealed class RightColumnView
         _markOk = UiKit.Get<Image>(screenRoot, UiPaths.IconMarkOk).sprite;
         _markStash = UiKit.Get<Image>(screenRoot, UiPaths.IconMarkStash).sprite;
         _markWarn = UiKit.Get<Image>(screenRoot, UiPaths.IconMarkWarn).sprite;
-        _screen = (RectTransform)screenRoot;
-        _tip = (RectTransform)UiKit.Child(screenRoot, UiPaths.RightTooltip);
-        _tipTitle = UiKit.Get<TMP_Text>(_tip, UiPaths.RightTipTitle);
-        _tipKind = UiKit.Get<TMP_Text>(_tip, UiPaths.RightTipKind);
-        _tipAlt = UiKit.Get<TMP_Text>(_tip, UiPaths.RightTipAlt);
-        _tipDim = _tipAlt.color;
-        _tipCount = UiKit.Get<TMP_Text>(_tip, UiPaths.RightTipCount);
-        _tipQuests = UiKit.Get<TMP_Text>(_tip, UiPaths.RightTipQuests);
-        _tip.gameObject.SetActive(false);
         // 폭이 바뀌면 다시 그리지 않고 격자만 다시 놓는다.
         _scrollArea.gameObject.AddComponent<ResizeRelay>().Resized = Relayout;
 
@@ -544,48 +524,22 @@ internal sealed class RightColumnView
         foreach (var grid in _grids) UiKit.Guard("item grid relayout", () => grid.Layout(columns));
     }
 
-    // 폭은 가장 긴 줄에 맞추되 140~320 이고 넘으면 줄을 바꾼다. 칸 왼쪽에 띄우고 화면 밖으로 나가면 안으로 민다.
-    // 화면 루트의 마지막 자식이라 스크롤 마스크에 잘리지 않는다.
+    // 칸 왼쪽에 띄운다.
     private void ShowTip(RectTransform cell, ItemCellModel model, bool resolved, bool questItem, bool inFind)
     {
-        _tipTitle.text = model.Name ?? "";
+        _tip.Title.text = model.Name ?? "";
         // 퀘스트 전용 아이템은 금색으로, 수집 탭의 일반 아이템은 흐리게 종류 줄을 넣는다.
-        if (resolved && questItem) { SetTipLine(_tipKind, Texts.QuestItemKind); _tipKind.color = Gold; }
-        else if (resolved && inFind) { SetTipLine(_tipKind, Texts.LootItemKind); _tipKind.color = _tipDim; }
-        else SetTipLine(_tipKind, null);
-        SetTipLine(_tipAlt, model.TipAlternatives);
-        SetTipLine(_tipCount, model.TipCount);
-        _tipCount.color = model.Short ? ShortRed : HaveGreen;
-        SetTipLine(_tipQuests, model.TipQuests);
-        var width = TipMinWidth;
-        foreach (var t in new[] { _tipTitle, _tipKind, _tipAlt, _tipCount, _tipQuests })
-            if (t.gameObject.activeSelf) width = Mathf.Max(width, t.GetPreferredValues(t.text, 9999f, 9999f).x + TipPadding);
-        _tip.sizeDelta = new Vector2(Mathf.Min(width, TipMaxWidth), _tip.sizeDelta.y);
-        _tip.gameObject.SetActive(true);
-        _tip.SetAsLastSibling();
-        LayoutRebuilder.ForceRebuildLayoutImmediate(_tip);
-
-        var corners = new Vector3[4];
-        cell.GetWorldCorners(corners); // 1 은 왼쪽 위
-        var at = (Vector2)_screen.InverseTransformPoint(corners[1]);
-        var size = _tip.rect.size;
-        var area = _screen.rect;
-        var x = Mathf.Clamp(at.x - TipGap, area.xMin + size.x, Mathf.Max(area.xMin + size.x, area.xMax));
-        var y = Mathf.Clamp(at.y, area.yMin + size.y, Mathf.Max(area.yMin + size.y, area.yMax));
-        // 앵커가 루트 가운데라 루트 로컬 좌표가 곧 anchoredPosition 이다.
-        _tip.anchoredPosition = new Vector2(x - area.center.x, y - area.center.y);
+        if (resolved && questItem) { ScreenTip.SetLine(_tip.Kind, Texts.QuestItemKind); _tip.Kind.color = Gold; }
+        else if (resolved && inFind) { ScreenTip.SetLine(_tip.Kind, Texts.LootItemKind); _tip.Kind.color = _tip.Dim; }
+        else ScreenTip.SetLine(_tip.Kind, null);
+        ScreenTip.SetLine(_tip.Alt, model.TipAlternatives);
+        ScreenTip.SetLine(_tip.Count, model.TipCount);
+        _tip.Count.color = model.Short ? ShortRed : HaveGreen;
+        ScreenTip.SetLine(_tip.Quests, model.TipQuests);
+        _tip.Show(cell, false);
     }
 
-    private static void SetTipLine(TMP_Text text, string value)
-    {
-        text.gameObject.SetActive(!string.IsNullOrEmpty(value));
-        text.text = value ?? "";
-    }
-
-    internal void HideTip()
-    {
-        if (_tip != null) _tip.gameObject.SetActive(false);
-    }
+    internal void HideTip() => _tip.Hide();
 
     // 레이아웃 전이라 폭이 0 이면 캔버스를 한 번 갱신해 본다.
     private int Columns()

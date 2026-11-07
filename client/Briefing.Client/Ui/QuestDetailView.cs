@@ -9,7 +9,7 @@ namespace Briefing.Ui;
 
 // 펼친 줄 바로 아래에 DetailTemplate 을 복제해 목표 줄과 "임무 탭에서 보기" 버튼을 채운다.
 // 건네주기 버튼이 있는 줄은 HandoverTemplate, 나머지는 ObjectiveTemplate 을 복제한다. 블록은 QuestListView 가 다른 줄과 함께 지운다.
-// "완료 가능" 묶음에서는 "완료하러 가기" 버튼도 켠다.
+// "완료 가능" 묶음에서는 "완료하러 가기" 버튼도 켠다. 처치 대상을 줄여 적은 목표 줄은 마우스를 올리면 오른쪽에 전체 목록 말풍선을 띄운다.
 internal sealed class QuestDetailView
 {
     // 게임 버튼 복제본의 크기. 프리팹 버튼에 맞추고 높이만 30 으로 낮춘다.
@@ -22,10 +22,12 @@ internal sealed class QuestDetailView
     private readonly Action<DetailLine> _onHandover;
     private readonly Func<bool> _handoverBusy;
     private readonly Action<string, string> _onTrack;
+    private readonly ScreenTip _tip; // 없으면 말풍선 없이 줄만 그린다
 
-    internal QuestDetailView(Transform screenRoot, Action<string> onOpenTasks, Action<string> onTurnIn, Action<DetailLine> onHandover,
+    internal QuestDetailView(Transform screenRoot, ScreenTip tip, Action<string> onOpenTasks, Action<string> onTurnIn, Action<DetailLine> onHandover,
         Func<bool> handoverBusy, Action<string, string> onTrack)
     {
+        _tip = tip;
         _onTrack = onTrack;
         _onOpenTasks = onOpenTasks;
         _onTurnIn = onTurnIn;
@@ -145,7 +147,38 @@ internal sealed class QuestDetailView
         UiKit.Get<Image>(t, UiPaths.ObjectiveCheck).gameObject.SetActive(done);
 
         AddTracking(go, line, tracked);
+        AddEnemyTip(go, line);
         go.SetActive(true);
+    }
+
+    // 블록을 지우거나 스크롤하면 마우스 내림 알림 없이 줄이 사라지거나 움직이므로 부른 쪽이 닫는다.
+    internal void HideTip() => _tip?.Hide();
+
+    // 목표 줄 전체에 마우스를 올리면 줄 오른쪽(지도 위)에 띄운다.
+    private void AddEnemyTip(GameObject row, DetailLine line)
+    {
+        if (_tip == null || string.IsNullOrEmpty(line.TipBody)) return;
+        UiKit.Guard("objective enemy tip", () =>
+        {
+            EnsureRaycast(row);
+            var relay = row.AddComponent<HoverRelay>();
+            relay.Enter = () =>
+            {
+                _tip.Title.text = line.TipTitle ?? "";
+                ScreenTip.SetLine(_tip.Kind, null);
+                ScreenTip.SetLine(_tip.Alt, line.TipBody);
+                ScreenTip.SetLine(_tip.Count, null);
+                ScreenTip.SetLine(_tip.Quests, null);
+                _tip.Show((RectTransform)row.transform, true); // 작은 줄 끝은 수치 칸 앞이라 버튼을 가린다. 줄 끝 = 1열 오른쪽 끝
+            };
+            relay.Exit = _tip.Hide;
+        });
+    }
+
+    // 줄의 글과 아이콘은 레이캐스트를 끄고 바탕도 없어서 마우스를 받도록 투명 Image 를 붙인다.
+    private static void EnsureRaycast(GameObject row)
+    {
+        if (row.GetComponent<Graphic>() == null) row.AddComponent<Image>().color = Color.clear;
     }
 
     // 펼침 블록은 바탕이 어두워 QuestTracker 색을 그대로 쓴다. 글은 줄바꿈되므로 잘리지 않는다.
@@ -156,13 +189,13 @@ internal sealed class QuestDetailView
         return $"{text} <color=#{ColorUtility.ToHtmlStringRGB(tracked.Color)}>{tracked.ConditionLabel}</color>";
     }
 
-    // 줄의 글과 아이콘은 레이캐스트를 끄고 바탕도 없어서 우클릭을 받도록 투명 Image 를 붙인다. 건네주기 버튼 위 우클릭은 버튼이 받는다.
+    // 우클릭을 받도록 투명 Image 를 붙인다. 건네주기 버튼 위 우클릭은 버튼이 받는다.
     private void AddTracking(GameObject row, DetailLine line, TrackedSet tracked)
     {
         if (tracked == null || string.IsNullOrEmpty(line.ConditionId)) return;
         UiKit.Guard("objective tracking", () =>
         {
-            if (row.GetComponent<Graphic>() == null) row.AddComponent<Image>().color = Color.clear;
+            EnsureRaycast(row);
             row.AddComponent<RightClickRelay>().Click = _ => _onTrack(line.QuestId, line.ConditionId);
         });
     }
