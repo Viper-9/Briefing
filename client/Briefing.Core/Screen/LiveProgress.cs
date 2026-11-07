@@ -139,6 +139,7 @@ public static class LiveProgress
                 Target = o.Target,
                 InferredMap = o.InferredMap,
                 Locations = o.Locations,
+                Enemies = o.Enemies,
                 Done = value.Done,
             };
         }

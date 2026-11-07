@@ -84,6 +84,7 @@ public class RaidProgressTests
         Assert.Equal(9, appliedQuest.Current);
         Assert.Equal(15, appliedQuest.Target);
         Assert.Same(viewership.Objectives.Single().Locations, appliedQuest.Objectives.Single().Locations); // 위치는 공유
+        Assert.Same(viewership.Objectives.Single().Enemies, appliedQuest.Objectives.Single().Enemies);     // 처치 대상도
         // 바뀌지 않은 것은 같은 객체(깊은 복사 없음).
         Assert.Same(other, appliedBigmap.Quests.Single(q => q.QuestId == other.QuestId));
         Assert.Same(factory, applied.Maps.Single(m => m.Key == "factory4_day"));

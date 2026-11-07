@@ -72,8 +72,23 @@ public sealed class BriefingObjective
     public double? Target { get; set; }
     public bool InferredMap { get; set; }
     public List<BriefingLocation> Locations { get; set; } = new List<BriefingLocation>();
+    // 처치·명중 목표가 인정하는 적(하위 조건마다 하나). 그 밖의 목표와 예전 QuestCodex 는 빈 목록.
+    public List<BriefingEnemy> Enemies { get; set; } = new List<BriefingEnemy>();
     // 클라이언트 전용. 레이드 중 LiveProgress 가 끝났다고 표시한 목표. 서버 응답에서는 늘 false.
     public bool Done { get; set; }
+}
+
+// 처치(Kind "kills")·명중("shots") 하위 조건 하나가 인정하는 적. 게임 판정 값 그대로다.
+// Target 은 피해자 진영(Savage, AnyPmc, Usec, Bear, Any. 모드는 다른 값도 가능). Roles 는 봇 역할 키이고,
+// 비어 있으면 Target 진영 전부라 Savage 면 보스·경호원·레이더·로그까지 들어간다.
+// Names 는 Roles 의 표시 이름(응답 언어). 서버가 같은 이름을 하나로 합치고 개발용 역할을 빼서 Roles 보다 짧을 수 있다.
+public sealed class BriefingEnemy
+{
+    public string Kind { get; set; }
+    public string Target { get; set; }
+    public string TargetName { get; set; }
+    public List<string> Roles { get; set; } = new List<string>();
+    public List<string> Names { get; set; } = new List<string>();
 }
 
 // 목표 위치(월드 좌표). 맵 탭 안에서는 그 탭 것만 하나로 합쳐 오고 Map 은 탭 키다.
