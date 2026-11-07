@@ -25,6 +25,7 @@ internal static class BriefingState
     internal static bool ShowExitTransit = true;
     internal static bool ShowDoors = true;
     internal static bool ShowAreas = true;
+    internal static bool ShowBosses = true;
     // 마우스를 올린 퀘스트(맵 묶음의 줄이나 지도 마커). 지도 강조에서 선택한 퀘스트보다 먼저다.
     internal static string HotQuestId;
 

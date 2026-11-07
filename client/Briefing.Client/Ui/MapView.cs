@@ -39,6 +39,11 @@ internal sealed class MapView
     private readonly Toggle _exitTransit;
     private readonly Toggle _doorsToggle;
     private readonly Toggle _areasToggle;
+    private readonly Toggle _bossesToggle;
+    private readonly ScreenTip _tip;        // 보스 체크박스 말풍선. null 이면 말풍선만 없다
+    private bool _bossTipShown;            // 공유 말풍선을 지금 이 체크박스가 띄우고 있는지
+    private bool _hasBossData;             // 마지막으로 그린 장면의 보스 정보
+    private IReadOnlyList<string> _unplacedBosses = new string[0];
     private readonly MapOverlays _overlays;
     private readonly Action _onChanged;
     private readonly List<(MapLayerDef Layer, Graphic Image)> _images = new List<(MapLayerDef, Graphic)>();
@@ -63,10 +68,11 @@ internal sealed class MapView
     private MapViewport _dragView;
 
     // onChanged 는 지도 정의를 받았거나 층·체크박스를 바꿨을 때 불리고, 부른 쪽이 Render 로 다시 그린다.
-    // onHot 은 마커에 마우스를 올리면 questId, 내리면 null.
-    internal MapView(Transform screenRoot, Action onChanged, Action<string> onHot = null, Action<string> onMarkerClick = null)
+    // onHot 은 마커에 마우스를 올리면 questId, 내리면 null. tip 은 "보스" 체크박스 말풍선이고 null 이어도 된다.
+    internal MapView(Transform screenRoot, Action onChanged, Action<string> onHot = null, Action<string> onMarkerClick = null, ScreenTip tip = null)
     {
         _onChanged = onChanged;
+        _tip = tip;
         _viewport = (RectTransform)UiKit.Child(screenRoot, UiPaths.MapViewport);
         _content = (RectTransform)UiKit.Child(screenRoot, UiPaths.MapContent);
         _layers = UiKit.Child(screenRoot, UiPaths.MapLayers);
@@ -90,6 +96,10 @@ internal sealed class MapView
         _exitsButton.onClick.AddListener(() => UiKit.Guard("map exits menu", () => SetExitsMenu(!_exitsMenu.activeSelf)));
         UiKit.Get<Button>(screenRoot, UiPaths.ExitsBlocker).onClick.AddListener(() => UiKit.Guard("map exits menu close", () => SetExitsMenu(false)));
         _doorsToggle = LayerToggle(screenRoot, UiPaths.ToggleDoors, Texts.LayerDoors, BriefingState.ShowDoors, v => BriefingState.ShowDoors = v);
+        _bossesToggle = LayerToggle(screenRoot, UiPaths.ToggleBosses, Texts.LayerBosses, BriefingState.ShowBosses, v => { BriefingState.ShowBosses = v; HideBossTip(); });
+        var bossRelay = _bossesToggle.gameObject.AddComponent<HoverRelay>(); // Toggle 이 클릭을 받으므로 Click 은 넣지 않는다
+        bossRelay.Enter = ShowBossTip;
+        bossRelay.Exit = HideBossTip;
         _areasToggle = LayerToggle(screenRoot, UiPaths.ToggleAreas, Texts.LayerAreas, BriefingState.ShowAreas, v => BriefingState.ShowAreas = v);
         UiKit.Get<Button>(screenRoot, UiPaths.ZoomIn).onClick.AddListener(() => UiKit.Guard("map zoom in", () => ZoomAtCenter(1.25)));
         UiKit.Get<Button>(screenRoot, UiPaths.ZoomOut).onClick.AddListener(() => UiKit.Guard("map zoom out", () => ZoomAtCenter(0.8)));
@@ -141,7 +151,7 @@ internal sealed class MapView
     {
         if (_stackHost == null || _toggles == null || !_toggles.activeInHierarchy) return;
         var column = (RectTransform)_toggles.transform.parent;
-        var toggles = new[] { _exitsButton.transform, _doorsToggle.transform, _areasToggle.transform }; // ExitsMenu 는 레이아웃 밖이라 폭에 넣지 않는다
+        var toggles = new[] { _exitsButton.transform, _doorsToggle.transform, _bossesToggle.transform, _areasToggle.transform }; // ExitsMenu 는 레이아웃 밖이라 폭에 넣지 않는다
         var row = 0f;
         foreach (var t in toggles) row += LayoutUtility.GetPreferredWidth((RectTransform)t);
         if (row <= 0) return;
@@ -179,6 +189,7 @@ internal sealed class MapView
         if (map != null) BriefingState.UseMap(map.Key); // 응답이 잠깐 없을 때는 층과 확대를 지우지 않는다
         var keyChanged = BriefingState.MapKey != keyBefore;
         if (keyChanged) UiKit.Guard("map exits menu close", () => SetExitsMenu(false));
+        if (keyChanged) HideBossTip();
         _map = map;
         _response = response;
         _shown = shown;
@@ -216,10 +227,13 @@ internal sealed class MapView
             ShowExitTransit = BriefingState.ShowExitTransit,
             ShowDoors = BriefingState.ShowDoors,
             ShowAreas = BriefingState.ShowAreas,
+            ShowBosses = BriefingState.ShowBosses,
             EmphasisQuestId = emphasis,
         }));
         // Build 가 실패하면 직전 그림을 그대로 둔다. 빈 지도보다 낫고, 맵이 바뀌었다면 Load 가 이미 지웠다.
         if (scene == null) return;
+        _hasBossData = scene.HasBossData;
+        _unplacedBosses = scene.UnplacedBosses;
         UiKit.Guard("map layers", () => ApplyLevel(scene.Level));
         UiKit.Guard("map floors", () => RenderFloors(scene.Floors));
         UiKit.Guard("map overlays", () => _overlays.Draw(scene));
@@ -257,11 +271,13 @@ internal sealed class MapView
         SetToggleLabel(_exitScav, Texts.ExitKind("scav"));
         SetToggleLabel(_exitTransit, Texts.ExitKind("transit"));
         SetToggleLabel(_doorsToggle, Texts.LayerDoors);
+        SetToggleLabel(_bossesToggle, Texts.LayerBosses);
         SetToggleLabel(_areasToggle, Texts.LayerAreas);
         _exitPmc.SetIsOnWithoutNotify(BriefingState.ShowExitPmc);
         _exitScav.SetIsOnWithoutNotify(BriefingState.ShowExitScav);
         _exitTransit.SetIsOnWithoutNotify(BriefingState.ShowExitTransit);
         _doorsToggle.SetIsOnWithoutNotify(BriefingState.ShowDoors);
+        _bossesToggle.SetIsOnWithoutNotify(BriefingState.ShowBosses);
         _areasToggle.SetIsOnWithoutNotify(BriefingState.ShowAreas);
         UpdateExitsCheck();
     }
@@ -309,7 +325,40 @@ internal sealed class MapView
     }
 
     // 탭을 숨길 때 부른다.
-    internal void CloseMenus() => SetExitsMenu(false);
+    internal void CloseMenus()
+    {
+        SetExitsMenu(false);
+        HideBossTip();
+    }
+
+    // "보스" 체크박스 말풍선. 보스 정보가 없으면 그 문구 한 줄, 위치 미정 보스가 있으면 제목과 줄 목록.
+    // 위치 미정 없이 구역만 있으면 지도에 다 보이므로 띄우지 않는다.
+    // 체크박스 줄 바로 아래에 띄우고, 세로로 쌓였을 때는 아래 체크박스를 가리지 않게 왼쪽(지도 쪽)에 띄운다.
+    private void ShowBossTip()
+    {
+        if (_tip == null || _def == null) return;
+        string title, body;
+        if (!_hasBossData) { title = Texts.BossesNone; body = null; }
+        else if (_unplacedBosses.Count > 0) { title = Texts.BossUnplaced; body = string.Join("\n", _unplacedBosses); }
+        else return;
+        _tip.Title.text = title;
+        ScreenTip.SetLine(_tip.Kind, null);
+        ScreenTip.SetLine(_tip.Alt, body);
+        ScreenTip.SetLine(_tip.Count, null);
+        ScreenTip.SetLine(_tip.Quests, null);
+        var target = (RectTransform)_bossesToggle.transform;
+        if (_stacked) _tip.Show(target, false);
+        else _tip.ShowBelow(target);
+        _bossTipShown = true;
+    }
+
+    // 다른 열이 띄운 말풍선은 건드리지 않는다.
+    private void HideBossTip()
+    {
+        if (!_bossTipShown) return;
+        _bossTipShown = false;
+        _tip?.Hide();
+    }
 
     private void Load(string folder)
     {
@@ -444,6 +493,9 @@ internal sealed class MapView
         ClearFloors();
         _overlays.Clear();
         _credit.text = "";
+        _hasBossData = false;
+        _unplacedBosses = new string[0];
+        HideBossTip();
         SetControls(false);
     }
 

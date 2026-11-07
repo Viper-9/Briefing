@@ -405,4 +405,94 @@ public class MapSceneTests
         var all = Live(hobby);
         Assert.Equal(Emphasis.Dim, Scene(map: all.Maps[0], response: all).Markers.Single(m => m.QuestId == Hobby).Emphasis);
     }
+
+    // 보스 구역 위치는 fixture 탈출구 자리를 빌린다: ZB-013 은 지하, Dorms V-Ex 는 지상.
+    private static BriefingPoint ExitAt(string name) =>
+        Bigmap.Exits.First(e => (string.IsNullOrEmpty(e.Name) ? e.Key : e.Name) == name).Position;
+
+    private static BriefingBoss Boss(string key, string kind = "boss", int chance = 30) =>
+        new BriefingBoss { Key = key, Kind = kind, MapChance = chance };
+
+    private static BriefingMap BossMap(BriefingBosses bosses) =>
+        new BriefingMap { Key = "bigmap", LocationIds = { "bigmap" }, Bosses = bosses };
+
+    private static BriefingMap CustomsBosses() => BossMap(new BriefingBosses
+    {
+        Zones =
+        {
+            new BriefingBossZone { Zone = "ZoneDormitory", Position = ExitAt("Dorms V-Ex"), Bosses = { Boss("bossBully"), Boss("exUsec", "minor", 20) } },
+            new BriefingBossZone { Zone = "ZoneBasement", Position = ExitAt("ZB-013"), Bosses = { Boss("pmcBot", "minor", 15), Boss("exUsec", "minor", 20) } },
+            new BriefingBossZone { Zone = "ZoneNowhere", Position = null, Bosses = { Boss("bossKilla") } },
+        },
+        Unplaced = { Boss("bossPartisan"), new BriefingBoss { Key = "bossKnight", Kind = "boss", MapChance = 35, Rotating = true } },
+    });
+
+    private static MapSceneModel BossScene(BriefingMap map, int? level = null, bool bosses = true) =>
+        MapScene.Build(new MapSceneInput { Response = Active, Map = map, Def = Customs, Level = level, ShowBosses = bosses });
+
+    [Fact]
+    public void Bosses_are_on_every_level_other_floors_first()
+    {
+        var ground = BossScene(CustomsBosses()).Bosses;
+
+        Assert.Equal(2, ground.Count); // 위치 없는 구역은 건너뜀
+        Assert.Equal(new[] { true, false }, ground.Select(b => b.OtherFloor)); // 지하 것이 먼저
+        Assert.Equal(new[] { "레이더 15%", "로그 20%" }, ground[0].Lines);
+        Assert.Equal(new[] { "르샬라 30%", "로그 20%" }, ground[1].Lines);
+
+        var basement = BossScene(CustomsBosses(), -1).Bosses;
+        Assert.Equal(new[] { true, false }, basement.Select(b => b.OtherFloor));
+        Assert.Equal("르샬라 30%", basement[0].Lines[0]);
+    }
+
+    [Fact]
+    public void Boss_marker_is_minor_only_when_every_boss_is_minor()
+    {
+        var bosses = BossScene(CustomsBosses()).Bosses;
+
+        Assert.True(bosses[0].Minor);   // 레이더·로그
+        Assert.False(bosses[1].Minor);  // 르샬라가 섞임
+    }
+
+    [Fact]
+    public void Boss_lines_are_bossline_text()
+    {
+        var map = CustomsBosses();
+        var zone = map.Bosses.Zones[0];
+
+        Assert.Equal(zone.Bosses.Select(BossLine.Of), BossScene(map).Bosses.Single(b => !b.OtherFloor).Lines);
+        Assert.Equal(new[] { "파르티잔 30%", "군즈 (순환) 35%" }, BossScene(map).UnplacedBosses);
+    }
+
+    [Fact]
+    public void Boss_checkbox_off_hides_markers_but_keeps_unplaced_lines()
+    {
+        var s = BossScene(CustomsBosses(), bosses: false);
+
+        Assert.Empty(s.Bosses);
+        Assert.Equal(2, s.UnplacedBosses.Count);
+        Assert.True(s.HasBossData);
+        Assert.NotEqual(BossScene(CustomsBosses()).Signature, s.Signature);
+    }
+
+    [Fact]
+    public void Map_without_boss_data_has_nothing()
+    {
+        // 예전 QuestCodex 는 bosses 를 보내지 않아 빈 객체
+        var s = BossScene(new BriefingMap { Key = "bigmap", LocationIds = { "bigmap" } });
+
+        Assert.Empty(s.Bosses);
+        Assert.Empty(s.UnplacedBosses);
+        Assert.False(s.HasBossData);
+    }
+
+    [Fact]
+    public void Only_unplaced_bosses_still_count_as_boss_data()
+    {
+        var s = BossScene(BossMap(new BriefingBosses { Unplaced = { Boss("bossPartisan") } }));
+
+        Assert.Empty(s.Bosses);
+        Assert.True(s.HasBossData);
+        Assert.Equal(new[] { "파르티잔 30%" }, s.UnplacedBosses);
+    }
 }

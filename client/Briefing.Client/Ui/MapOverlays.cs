@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Briefing.Ui;
 
-// 지도 위 구역, 잠긴 문, 탈출구, 퀘스트 마커와 말풍선. MapScene 이 정한 것만 찍는다.
+// 지도 위 구역, 잠긴 문, 보스, 탈출구, 퀘스트 마커와 말풍선. MapScene 이 정한 것만 찍는다.
 // 마우스를 올릴 때마다 다시 만들면 올린 마커가 사라져 내림·올림이 되풀이되므로, Signature 가 같으면 색과 알파만 바꾼다.
 // 아이콘과 마커는 확대해도 화면에서 같은 크기로 보이게 배율로 나눈다.
 internal sealed class MapOverlays
@@ -19,9 +19,13 @@ internal sealed class MapOverlays
     private readonly RectTransform _column;
     private readonly Transform _areas;
     private readonly Transform _doors;
+    private readonly Transform _bosses;
     private readonly Transform _exits;
     private readonly Transform _markers;
     private readonly GameObject _doorTemplate;
+    private readonly GameObject _bossTemplate;
+    private readonly Sprite _bossIcon;
+    private readonly Sprite _bossMinorIcon;
     private readonly GameObject _exitTemplate;
     private readonly GameObject _markerTemplate;
     private readonly RectTransform _tip;
@@ -48,9 +52,11 @@ internal sealed class MapOverlays
         _column = (RectTransform)UiKit.Child(screenRoot, UiPaths.MapViewport).parent;
         _areas = UiKit.Child(screenRoot, UiPaths.MapAreas);
         _doors = UiKit.Child(screenRoot, UiPaths.MapDoors);
+        _bosses = UiKit.Child(screenRoot, UiPaths.MapBosses);
         _exits = UiKit.Child(screenRoot, UiPaths.MapExits);
         _markers = UiKit.Child(screenRoot, UiPaths.MapMarkers);
         _doorTemplate = Template(screenRoot, UiPaths.DoorTemplate);
+        _bossTemplate = Template(screenRoot, UiPaths.BossTemplate);
         _exitTemplate = Template(screenRoot, UiPaths.ExitTemplate);
         _markerTemplate = Template(screenRoot, UiPaths.MarkerTemplate);
         UiKit.Get<Image>(_markerTemplate.transform, UiPaths.MarkerFill);
@@ -63,7 +69,10 @@ internal sealed class MapOverlays
         _exitIcons["scav"] = UiKit.Get<Image>(screenRoot, UiPaths.IconScav).sprite;
         _exitIcons["transit"] = UiKit.Get<Image>(screenRoot, UiPaths.IconTransit).sprite;
         UiKit.Get<Image>(screenRoot, UiPaths.IconDoor);
+        _bossIcon = UiKit.Get<Image>(screenRoot, UiPaths.IconBoss).sprite;
+        _bossMinorIcon = UiKit.Get<Image>(screenRoot, UiPaths.IconBossMinor).sprite;
         _doorTemplate.SetActive(false);
+        _bossTemplate.SetActive(false);
         _exitTemplate.SetActive(false);
         _markerTemplate.SetActive(false);
         _tip.gameObject.SetActive(false);
@@ -100,6 +109,7 @@ internal sealed class MapOverlays
         _signature = scene.Signature;
         foreach (var a in scene.Areas) Add("map area", () => AddArea(a));
         foreach (var d in scene.Doors) Add("map door", () => AddDoor(d));
+        foreach (var b in scene.Bosses) Add("map boss", () => AddBoss(b));
         foreach (var e in scene.Exits) Add("map exit", () => AddExit(e));
         foreach (var m in scene.Markers) Add("map marker", () => AddMarker(m));
         Emphasize(scene);
@@ -188,6 +198,18 @@ internal sealed class MapOverlays
         var go = Spawn(_doorTemplate, _doors, "Door", d.At);
         var label = d.Label;
         Relay(go, () => ShowTip((RectTransform)go.transform, label, null), HideTip, null);
+    }
+
+    // 준보스만 있는 구역은 주황 그림, 다른 층 구역은 흐리게. 말풍선은 보스마다 한 줄.
+    private void AddBoss(BossDraw b)
+    {
+        var go = Spawn(_bossTemplate, _bosses, "Boss", b.At);
+        var image = go.GetComponent<Image>();
+        if (b.Minor) image.sprite = _bossMinorIcon;
+        else if (_bossIcon != null) image.sprite = _bossIcon;
+        image.color = new Color(1, 1, 1, b.OtherFloor ? OtherFloorAlpha : 1f);
+        var lines = string.Join("\n", b.Lines);
+        Relay(go, () => ShowTip((RectTransform)go.transform, lines, null), HideTip, null);
     }
 
     private void AddExit(ExitDraw e)

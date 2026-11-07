@@ -93,6 +93,58 @@ public static class Texts
     public static string LayerExits => L("탈출구", "Extracts", "Выходы");
     public static string LayerDoors => L("잠긴 문", "Locked doors", "Запертые двери");
     public static string LayerAreas => L("퀘스트 구역", "Quest zones", "Зоны заданий");
+    public static string LayerBosses => L("보스", "Bosses", "Боссы");
+
+    // 보스 마커 말풍선과 "보스" 체크박스 말풍선. QuestCodex 웹 map.boss.* 문구와 같다.
+    public static string BossesNone => L("이 지도에는 보스 정보가 없습니다", "No boss data for this map", "Для этой карты нет данных о боссах");
+    public static string BossUnplaced => L("위치 정해지지 않음", "No fixed location", "Без точного места");
+    public static string BossNight => L("밤", "night", "ночь");
+    public static string BossRotating => L("순환", "rotating", "меняют карты");
+    public static string BossConditional => L("조건부", "needs a trigger", "нужно условие");
+
+    // 짝 맵 중 한쪽에만 해당하는 줄의 표시. 모르는 맵 키면 null 이라 표시가 빠진다.
+    public static string BossOn(string map)
+    {
+        switch (map)
+        {
+            case "factory4_day": return L("주간", "day", "день");
+            case "factory4_night": return L("야간", "night", "ночь");
+            case "sandbox": return L("저레벨", "low level", "низкий уровень");
+            case "sandbox_high": return L("고레벨", "high level", "высокий уровень");
+            default: return null;
+        }
+    }
+
+    // 모르는 보스(모드가 넣은 봇 등)는 키 그대로 보인다.
+    public static string BossName(string key)
+    {
+        switch (key)
+        {
+            case "bossBully": return L("르샬라", "Reshala", "Решала");
+            case "bossKilla": return L("킬라", "Killa", "Килла");
+            case "bossGluhar": return L("글루하", "Glukhar", "Глухарь");
+            case "bossKojaniy": return L("슈트르만", "Shturman", "Штурман");
+            case "bossSanitar": return L("세니타", "Sanitar", "Санитар");
+            case "bossTagilla": return L("타길라", "Tagilla", "Тагилла");
+            case "bossTagillaAgro": return L("타길라(미궁)", "Tagilla (Labyrinth)", "Тагилла (Лабиринт)");
+            case "bossKillaAgro": return L("킬라(미궁)", "Killa (Labyrinth)", "Килла (Лабиринт)");
+            case "bossBoar": return L("카반", "Kaban", "Кабан");
+            case "bossBoarSniper": return L("카반 저격수", "Kaban's sniper", "Снайпер Кабана");
+            case "bossKolontay": return L("콜론타이", "Kollontay", "Коллонтай");
+            case "bossKnight": return L("군즈", "Goons", "Гуны");
+            case "bossPartisan": return L("파르티잔", "Partisan", "Партизан");
+            case "bossZryachiy": return L("즈랴치", "Zryachiy", "Зрячий");
+            case "sectantPriest": return L("광신도 사제", "Cultist Priest", "Сектант Жрец");
+            case "gifter": return L("산타", "Santa", "Санта");
+            case "pmcBot": return L("레이더", "Raiders", "Рейдеры");
+            case "exUsec": return L("로그", "Rogues", "Отступники");
+            case "peacemaker": return L("피스메이커", "Peacemakers", "Миротворцы");
+            case "arenaFighterEvent": return L("밀수업자", "Smugglers", "Курьеры");
+            case "crazyAssaultEvent": return L("미친 스캐브", "Crazy Scavs", "Безумные дикие");
+            case "tagillaHelperAgro": return L("타길라 부하", "Tagilla's helpers", "Помощники Тагиллы");
+            default: return key ?? "";
+        }
+    }
 
     // "deck"(아이스브레이커)은 층 번호가 곧 데크 번호. 그 밖에는 0 이 지상, 음수가 지하, n 이 n+1층.
     public static string FloorName(int level, string floorNames)

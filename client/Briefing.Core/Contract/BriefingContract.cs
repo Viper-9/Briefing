@@ -38,6 +38,8 @@ public sealed class BriefingMap
     public List<BriefingQuest> Quests { get; set; } = new List<BriefingQuest>();
     public List<BriefingExit> Exits { get; set; } = new List<BriefingExit>();
     public List<BriefingDoor> LockedDoors { get; set; } = new List<BriefingDoor>();
+    // 보스 출현. 예전 QuestCodex 는 보내지 않아 빈 객체.
+    public BriefingBosses Bosses { get; set; } = new BriefingBosses();
     // 오른쪽 열. 이 맵 전용 목표의 것만 온다. 수집은 place 마다 같은 줄이 반복될 수 있다.
     public List<BriefingItemRow> Bring { get; set; } = new List<BriefingItemRow>();
     public List<BriefingItemRow> Find { get; set; } = new List<BriefingItemRow>();
@@ -137,6 +139,35 @@ public sealed class BriefingDoor
     public string Kind { get; set; }
     public BriefingPoint Position { get; set; }
     public string Code { get; set; }
+}
+
+// 탭의 보스 출현. 서버가 짝 맵(공장 주간·야간 등)을 구역 이름으로 합쳐 보낸다.
+// Unplaced 는 정해진 구역이 없거나 좌표를 모르는 보스라 지도 마커 없이 "보스" 체크박스 말풍선에 나온다.
+public sealed class BriefingBosses
+{
+    public List<BriefingBossZone> Zones { get; set; } = new List<BriefingBossZone>();
+    public List<BriefingBoss> Unplaced { get; set; } = new List<BriefingBoss>();
+}
+
+// 구역 하나 = 지도 마커 하나. Position 이 없으면 지도가 건너뛴다.
+public sealed class BriefingBossZone
+{
+    public string Zone { get; set; }
+    public BriefingPoint Position { get; set; }
+    public List<BriefingBoss> Bosses { get; set; } = new List<BriefingBoss>();
+}
+
+// Key 는 게임 봇 이름(bossBully 등), Kind 는 boss|minor, MapChance 는 맵 어디서든 나올 확률(%).
+// Conditional 은 트리거(스위치·이벤트)가 있어야 나온다는 뜻, Rotating 은 SPT 가 몇 시간마다 맵을 돌려 가며 켠다는 뜻.
+// OnlyOn 은 짝 맵 중 그 서버 맵에서만 이 값일 때 그 맵 키(factory4_night 등). 탭의 모든 맵에서 같으면 null.
+public sealed class BriefingBoss
+{
+    public string Key { get; set; }
+    public string Kind { get; set; }
+    public int MapChance { get; set; }
+    public bool Conditional { get; set; }
+    public bool Rotating { get; set; }
+    public string OnlyOn { get; set; }
 }
 
 public sealed class BriefingPoint

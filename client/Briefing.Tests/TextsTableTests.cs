@@ -36,6 +36,11 @@ public class TextsTableTests
         yield return ("ExplosiveDoor", Texts.ExplosiveDoor("C4"));
         yield return ("FrozenHatch", Texts.FrozenHatch("Torch"));
         yield return ("MapCredit", Texts.MapCredit("Shebuka", "CC BY-NC-SA 4.0"));
+        foreach (var map in new[] { "factory4_day", "factory4_night", "sandbox", "sandbox_high" }) yield return ("BossOn", Texts.BossOn(map));
+        foreach (var key in new[] { "bossBully", "bossKilla", "bossGluhar", "bossKojaniy", "bossSanitar", "bossTagilla", "bossTagillaAgro",
+                     "bossKillaAgro", "bossBoar", "bossBoarSniper", "bossKolontay", "bossKnight", "bossPartisan", "bossZryachiy", "sectantPriest",
+                     "gifter", "pmcBot", "exUsec", "peacemaker", "arenaFighterEvent", "crazyAssaultEvent", "tagillaHelperAgro" })
+            yield return ("BossName", Texts.BossName(key));
         yield return ("ShortRows", Texts.ShortRows(2));
         yield return ("FindHere", Texts.FindHere("Customs"));
         yield return ("FilterOnly", Texts.FilterOnly("Quest"));
