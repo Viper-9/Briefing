@@ -52,6 +52,8 @@ internal sealed class QuestListView
         _list = UiKit.Child(screenRoot, UiPaths.List).gameObject;
         _scroll = UiKit.Get<ScrollRect>(screenRoot, UiPaths.List);
         _content = (RectTransform)UiKit.Child(screenRoot, UiPaths.ListContent);
+        // 휠로 스크롤하면 처치 대상 말풍선이 옛 줄 자리에 남으므로 숨긴다.
+        _scroll.onValueChanged.AddListener(_ => UiKit.Guard("list tooltip scroll", _detail.HideTip));
 
         _sectionTemplate = UiKit.Child(screenRoot, UiPaths.SectionTemplate).gameObject;
         foreach (var p in new[] { UiPaths.SectionCaret, UiPaths.SectionTitle, UiPaths.SectionCount }) UiKit.Get<TMP_Text>(_sectionTemplate.transform, p);
@@ -98,6 +100,7 @@ internal sealed class QuestListView
     internal void Clear()
     {
         _faces.CancelAll();
+        _detail.HideTip(); // 지운 줄에는 마우스 내림 알림이 오지 않는다
         foreach (var r in _rows)
         {
             if (r == null) continue;

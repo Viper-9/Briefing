@@ -18,11 +18,14 @@ public enum DetailLineKind
 // 화면이 그대로 찍는 값만 담는다. target 이 없으면 Progress 는 null.
 // Items 는 글 아래 작은 아이템 이름 줄. Marker 는 Objective 줄이 지도 좌표를 가질 때만 있다.
 // ShowButton 은 Handover 줄에만 켜지고, Ready 면 그 버튼을 지금 누를 수 있다.
+// TipTitle·TipBody 는 Items 에 다 못 적은 처치 대상 전체이고, 있을 때만 줄에 마우스를 올리면 말풍선이 뜬다.
 public sealed class DetailLine
 {
     public DetailLine(DetailLineKind kind, string questId, string conditionId, string text, string items, string progress,
-        int? marker = null, bool ready = false, bool showButton = false)
+        int? marker = null, bool ready = false, bool showButton = false, string tipTitle = null, string tipBody = null)
     {
+        TipTitle = tipTitle;
+        TipBody = tipBody;
         Kind = kind;
         QuestId = questId;
         ConditionId = conditionId;
@@ -43,6 +46,8 @@ public sealed class DetailLine
     public int? Marker { get; }
     public bool Ready { get; }
     public bool ShowButton { get; }
+    public string TipTitle { get; }
+    public string TipBody { get; }
 }
 
 // 같은 퀘스트가 맵 묶음과 "아무 맵에서나"에 함께 있을 수 있고 묶음마다 목표가 달라서 SectionKey 로 어느 줄 아래인지 정한다.
@@ -155,13 +160,15 @@ public static class QuestDetail
         return lines;
     }
 
-    // LiveProgress 가 끝났다고 표시한 목표는 대체 경로에서도 Done 줄로 그린다.
+    // LiveProgress 가 끝났다고 표시한 목표는 대체 경로에서도 Done 줄로 그린다. 끝난 줄에는 처치 대상을 적지 않는다.
     private static DetailLine Objective(string questId, BriefingObjective o, int? questMarker, string items)
     {
         if (o.Done) return new DetailLine(DetailLineKind.Done, questId, o.ConditionId, o.Text, items, LeftColumn.ProgressText(o.Current, o.Target));
         var marker = questMarker > 0 && HasPlace(o) ? questMarker : null;
+        var enemies = EnemyLine.Build(o.Enemies, o.Text);
+        if (enemies != null) items = items == null ? enemies.Line : items + " · " + enemies.Line;
         return new DetailLine(DetailLineKind.Objective, questId, o.ConditionId, o.Text, items, LeftColumn.ProgressText(o.Current, o.Target),
-            marker);
+            marker, tipTitle: enemies?.TipTitle, tipBody: enemies?.TipBody);
     }
 
     // 맵 탭 안의 locations 는 그 탭 것만 오므로 점이나 구역이 있으면 이 지도에 찍힌다.

@@ -28,6 +28,7 @@ internal sealed class BundleBriefingView : IBriefingView
     private MapView _map;
     private ColumnResize _columns;
     private RightColumnView _right;
+    private ScreenTip _tip;
     private GearReader _gear;
     private LeftColumnModel _model; // 마지막으로 그린 왼쪽 열. 지도 마커는 그 맵 묶음의 퀘스트다
     private BriefingResponse _response; // 마지막으로 그린 응답(레이드 중이면 실시간 진행이 반영된 것). 지도·오른쪽 열만 다시 그릴 때 쓴다
@@ -63,13 +64,15 @@ internal sealed class BundleBriefingView : IBriefingView
             _mapBar = new MapBarView(root, PickMap);
             _bridge = new QuestBridge(screen);
             _tracker = new QuestTrackerLink(screen);
-            var detail = new QuestDetailView(root, questId => TasksJump.Open(_screen, questId),
+            // 3열 아이템 칸과 1열 처치 대상 줄이 같이 쓰는 말풍선. 없으면 오른쪽 열이 빠지고 1열은 말풍선만 없다.
+            UiKit.Guard("tooltip", () => _tip = new ScreenTip(root));
+            var detail = new QuestDetailView(root, _tip, questId => TasksJump.Open(_screen, questId),
                 questId => TraderJump.Open(_screen, questId), line => _ = HandoverAndRefreshAsync(line), () => _bridge.Busy, ToggleTracked);
             _list = new QuestListView(root, _faces, detail, () => Render(false), OnQuestClick, OnRowHot, ToggleTracked);
             _status = new StatusBarView(root, () => _ = RefreshAndRenderAsync());
             UiKit.Guard("map view", () => _map = new MapView(root, RenderMap, OnMarkerHot, OnMarkerClick)); // 실패하면 지도만 빠진다
             UiKit.Guard("column resize", () => _columns = new ColumnResize(root)); // 실패하면 손잡이만 빠진다
-            UiKit.Guard("right column", () => _right = new RightColumnView(root, RenderRight)); // 실패하면 오른쪽 열만 빠진다
+            UiKit.Guard("right column", () => _right = new RightColumnView(root, _tip, RenderRight)); // 실패하면 오른쪽 열만 빠진다
             // 생성자가 중간에 실패하면 프리팹의 견본 데이터가 그대로 보이므로 따로 지운다.
             if (_right == null) UiKit.Guard("right column samples", () => UiKit.DestroySamples(UiKit.Child(root, UiPaths.RightContent)));
             _screen = screen;
@@ -110,7 +113,7 @@ internal sealed class BundleBriefingView : IBriefingView
         _faces?.CancelAll();
         _bridge?.CloseWindow();
         UiKit.Guard("map menus close", () => _map?.CloseMenus());
-        UiKit.Guard("right tooltip close", () => _right?.HideTip()); // 숨긴 칸에는 마우스 내림 알림이 오지 않는다
+        UiKit.Guard("tooltip close", () => _tip?.Hide()); // 숨긴 칸에는 마우스 내림 알림이 오지 않는다
     }
 
     // 요청을 보내고 지금 상태로 한 번, 응답이 오면 한 번 더 그린다. BriefingClient 의 Task 는 예외로 끝나지 않는다.
