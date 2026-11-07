@@ -64,13 +64,13 @@ internal sealed class BundleBriefingView : IBriefingView
             _mapBar = new MapBarView(root, PickMap);
             _bridge = new QuestBridge(screen);
             _tracker = new QuestTrackerLink(screen);
-            // 3열 아이템 칸과 1열 처치 대상 줄이 같이 쓰는 말풍선. 없으면 오른쪽 열이 빠지고 1열은 말풍선만 없다.
+            // 3열 아이템 칸, 1열 처치 대상 줄, 지도 "보스" 체크박스가 같이 쓰는 말풍선. 없으면 오른쪽 열이 빠지고 나머지는 말풍선만 없다.
             UiKit.Guard("tooltip", () => _tip = new ScreenTip(root));
             var detail = new QuestDetailView(root, _tip, questId => TasksJump.Open(_screen, questId),
                 questId => TraderJump.Open(_screen, questId), line => _ = HandoverAndRefreshAsync(line), () => _bridge.Busy, ToggleTracked);
             _list = new QuestListView(root, _faces, detail, () => Render(false), OnQuestClick, OnRowHot, ToggleTracked);
             _status = new StatusBarView(root, () => _ = RefreshAndRenderAsync());
-            UiKit.Guard("map view", () => _map = new MapView(root, RenderMap, OnMarkerHot, OnMarkerClick)); // 실패하면 지도만 빠진다
+            UiKit.Guard("map view", () => _map = new MapView(root, RenderMap, OnMarkerHot, OnMarkerClick, _tip)); // 실패하면 지도만 빠진다
             UiKit.Guard("column resize", () => _columns = new ColumnResize(root)); // 실패하면 손잡이만 빠진다
             UiKit.Guard("right column", () => _right = new RightColumnView(root, _tip, RenderRight)); // 실패하면 오른쪽 열만 빠진다
             // 생성자가 중간에 실패하면 프리팹의 견본 데이터가 그대로 보이므로 따로 지운다.

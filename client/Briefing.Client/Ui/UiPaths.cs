@@ -83,13 +83,15 @@ internal static class UiPaths
     internal const string HandoverGive = "Give";
     internal const string HandoverGiveLabel = "Give/Label";
 
-    // 지도 칸. Content 를 확대·이동하고, 그 아래는 지도, 구역, 잠긴 문, 탈출구, 마커 순으로 쌓인다.
+    // 지도 칸. Content 를 확대·이동하고, 그 아래는 지도, 구역, 잠긴 문, 보스, 탈출구, 마커 순으로 쌓인다.
     internal const string MapViewport = "Columns/ColMap/Viewport";
     internal const string MapContent = MapViewport + "/Content";
     internal const string MapLayers = MapContent + "/Layers";
     internal const string MapAreas = MapContent + "/Areas";
     internal const string MapDoors = MapContent + "/Doors";
     internal const string DoorTemplate = MapDoors + "/DoorTemplate";
+    internal const string MapBosses = MapContent + "/Bosses";
+    internal const string BossTemplate = MapBosses + "/BossTemplate";
     internal const string MapExits = MapContent + "/Exits";
     internal const string ExitTemplate = MapExits + "/ExitTemplate";
     internal const string MapMarkers = MapContent + "/Markers";
@@ -113,6 +115,7 @@ internal static class UiPaths
     internal const string ExitsBlocker = "Columns/ColMap/ExitsBlocker";
     internal const string ExitsCheck = "Box/Check"; // 버튼 안(버튼 기준)
     internal const string ToggleDoors = MapToggles + "/Doors";
+    internal const string ToggleBosses = MapToggles + "/Bosses";
     internal const string ToggleAreas = MapToggles + "/Areas";
     internal const string ToggleLabel = "Label"; // 체크박스 안(체크박스 기준)
     internal const string MapZoom = "Columns/ColMap/Zoom";
@@ -129,6 +132,8 @@ internal static class UiPaths
     internal const string IconScav = "Columns/ColMap/Icons/Scav";
     internal const string IconTransit = "Columns/ColMap/Icons/Transit";
     internal const string IconDoor = "Columns/ColMap/Icons/Door";
+    internal const string IconBoss = "Columns/ColMap/Icons/Boss";
+    internal const string IconBossMinor = "Columns/ColMap/Icons/BossMinor";
 
     // 오른쪽 열. 탭 셋, 필터 띠, 스크롤 본문 아래의 꺼 둔 템플릿.
     internal const string RightTabs = "Columns/ColRight/Tabs";

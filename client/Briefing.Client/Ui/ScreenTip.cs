@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace Briefing.Ui;
 
-// 프리팹 RightTooltip 말풍선 하나를 3열 아이템 칸과 1열 처치 대상 줄이 같이 쓴다.
+// 프리팹 RightTooltip 말풍선 하나를 3열 아이템 칸, 1열 처치 대상 줄, 지도 "보스" 체크박스가 같이 쓴다.
 // 줄 글은 부른 쪽이 SetLine 으로 채우고(값이 없으면 그 줄을 끈다) Show 가 폭을 맞춰 대상 옆에 띄운다.
 // 화면 루트의 마지막 자식이라 스크롤 마스크에 잘리지 않는다. 숨긴 칸·지운 줄에는 마우스 내림 알림이 오지 않아 부른 쪽이 Hide 를 챙긴다.
 internal sealed class ScreenTip
@@ -47,6 +47,23 @@ internal sealed class ScreenTip
     // 화면 밖으로 나가면 안으로 민다. 프리팹 말풍선의 기준점은 오른쪽 위다.
     internal void Show(RectTransform target, bool rightSide)
     {
+        var corners = Prepare(target); // 1 은 왼쪽 위, 2 는 오른쪽 위
+        var at = (Vector2)_screen.InverseTransformPoint(corners[rightSide ? 2 : 1]);
+        var right = rightSide ? at.x + Gap + _tip.rect.width : at.x - Gap;
+        Place(right, at.y);
+    }
+
+    // 대상 바로 아래에 오른쪽 끝을 맞춰 띄운다. 지도 칸 오른쪽 위 체크박스처럼 옆에 띄우면 이웃 체크박스를 가리는 대상에 쓴다.
+    internal void ShowBelow(RectTransform target)
+    {
+        var corners = Prepare(target); // 0 은 왼쪽 아래, 3 은 오른쪽 아래
+        var at = (Vector2)_screen.InverseTransformPoint(corners[3]);
+        Place(at.x, at.y - Gap);
+    }
+
+    // 폭을 맞추고 켠 뒤 대상의 네 모서리(월드 좌표)를 돌려준다.
+    private Vector3[] Prepare(RectTransform target)
+    {
         var width = MinWidth;
         foreach (var t in new[] { Title, Kind, Alt, Count, Quests })
             if (t.gameObject.activeSelf) width = Mathf.Max(width, t.GetPreferredValues(t.text, 9999f, 9999f).x + Padding);
@@ -54,15 +71,18 @@ internal sealed class ScreenTip
         _tip.gameObject.SetActive(true);
         _tip.SetAsLastSibling();
         LayoutRebuilder.ForceRebuildLayoutImmediate(_tip);
-
         var corners = new Vector3[4];
-        target.GetWorldCorners(corners); // 1 은 왼쪽 위, 2 는 오른쪽 위
-        var at = (Vector2)_screen.InverseTransformPoint(corners[rightSide ? 2 : 1]);
+        target.GetWorldCorners(corners);
+        return corners;
+    }
+
+    // 말풍선 오른쪽 위를 (right, top) 에 두고 화면 밖으로 나가면 안으로 민다.
+    private void Place(float right, float top)
+    {
         var size = _tip.rect.size;
         var area = _screen.rect;
-        var right = rightSide ? at.x + Gap + size.x : at.x - Gap;
         var x = Mathf.Clamp(right, area.xMin + size.x, Mathf.Max(area.xMin + size.x, area.xMax));
-        var y = Mathf.Clamp(at.y, area.yMin + size.y, Mathf.Max(area.yMin + size.y, area.yMax));
+        var y = Mathf.Clamp(top, area.yMin + size.y, Mathf.Max(area.yMin + size.y, area.yMax));
         // 앵커가 루트 가운데라 루트 로컬 좌표가 곧 anchoredPosition 이다.
         _tip.anchoredPosition = new Vector2(x - area.center.x, y - area.center.y);
     }
