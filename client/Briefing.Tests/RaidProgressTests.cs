@@ -92,6 +92,7 @@ public class RaidProgressTests
         Assert.Same(r.Traders, applied.Traders);
         Assert.Same(bigmap.Bring, appliedBigmap.Bring);
         Assert.Same(bigmap.Exits, appliedBigmap.Exits);
+        Assert.Same(bigmap.Bosses, appliedBigmap.Bosses);
         // 원래 응답은 그대로(다음 그리기는 다시 원래 응답에서 시작한다).
         Assert.Equal(6, viewership.Objectives.Single().Current);
         Assert.Equal(6, viewership.Current);

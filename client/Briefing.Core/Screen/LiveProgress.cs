@@ -169,6 +169,7 @@ public static class LiveProgress
         Quests = quests,
         Exits = map.Exits,
         LockedDoors = map.LockedDoors,
+        Bosses = map.Bosses,
         Bring = map.Bring,
         Find = map.Find,
         Gear = map.Gear,
