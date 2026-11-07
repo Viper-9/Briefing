@@ -525,7 +525,7 @@ public static class CreateBriefingPrefab
 
     // ── 지도 칸 ──
     // Viewport 는 휠·끌기를 받는 투명 바탕, Content 는 확대·이동 대상이고 크기와 위치는 코드가 정한다.
-    // Content 아래는 Layers, Areas, Doors, Exits, Markers 순으로 쌓이고 층 SVG 와 구역은 코드가 붙인다.
+    // Content 아래는 Layers, Areas, Doors, Bosses, Exits, Markers 순으로 쌓이고 층 SVG 와 구역은 코드가 붙인다.
     // 그 위에 층 버튼, 체크박스, 확대 버튼, 출처, 메시지, 말풍선이 있다. Icons 는 PNG 를 번들에 싣기 위한 꺼 둔 그릇이다.
     private static void BuildMapColumn(Transform columns)
     {
@@ -544,12 +544,13 @@ public static class CreateBriefingPrefab
         crt.pivot = new Vector2(0, 1);
         crt.sizeDelta = new Vector2(600, 300);
         crt.anchoredPosition = new Vector2(-300, 150);
-        foreach (var name in new[] { "Layers", "Areas", "Doors", "Exits", "Markers" }) Stretch(Child(content.transform, name));
+        foreach (var name in new[] { "Layers", "Areas", "Doors", "Bosses", "Exits", "Markers" }) Stretch(Child(content.transform, name));
         var ct = content.transform;
 
         var door = Icon(ct.Find("Doors"), "DoorTemplate", "door_with_lock.png", 26);
         door.GetComponent<Image>().color = DoorLocked; // 곱하기라 흰 도형만 빨갛게 되고 검은 외곽선은 그대로다(DynamicMaps 와 같다)
         door.SetActive(false);
+        Icon(ct.Find("Bosses"), "BossTemplate", "boss.png", 24).SetActive(false);
         Icon(ct.Find("Exits"), "ExitTemplate", "extract_pmc.png", 26).SetActive(false);
         Marker(ct.Find("Markers"), "MarkerTemplate").SetActive(false);
 
@@ -568,6 +569,7 @@ public static class CreateBriefingPrefab
         Fit(toggles);
         ExitsDropdown(toggles.transform);
         LayerToggle(toggles.transform, "Doors", "Locked doors");
+        LayerToggle(toggles.transform, "Bosses", "Bosses");
         LayerToggle(toggles.transform, "Areas", "Quest zones");
 
         // 목록 밖을 누르면 닫는 투명한 막(Unity Dropdown 의 Blocker 와 같다). 처음엔 꺼 두고 열 때 코드가 켠다.
@@ -600,12 +602,12 @@ public static class CreateBriefingPrefab
 
         var icons = Child(c, "Icons");
         foreach (var (name, file) in new[] { ("Pmc", "extract_pmc.png"), ("Shared", "extract_shared.png"), ("Scav", "extract_scav.png"),
-                     ("Transit", "extract_transit.png"), ("Door", "door_with_lock.png") })
+                     ("Transit", "extract_transit.png"), ("Door", "door_with_lock.png"), ("Boss", "boss.png"), ("BossMinor", "boss_minor.png") })
             Icon(icons.transform, name, file, 26);
         icons.SetActive(false);
     }
 
-    // 지도 위 아이콘(탈출구·잠긴 문). 마우스 올림 말풍선을 받으려고 raycastTarget 을 켠다. 위치는 코드가 앵커로 정한다.
+    // 지도 위 아이콘(탈출구·잠긴 문·보스). 마우스 올림 말풍선을 받으려고 raycastTarget 을 켠다. 위치는 코드가 앵커로 정한다.
     private static GameObject Icon(Transform parent, string name, string file, float size)
     {
         var go = Child(parent, name);
