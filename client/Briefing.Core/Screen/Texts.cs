@@ -72,6 +72,13 @@ public static class Texts
     public static string TurnIn => L("완료하러 가기", "Turn in", "Сдать");
     // 아이템 이름 3개 뒤에 붙는 나머지 개수. 앞 공백까지 포함한다.
     public static string MoreItems(int count) => L($" 외 {count}개", $" +{count} more", $" +{count} ещё");
+    // 펼친 처치·명중 목표 아래 줄의 머리말과 진영 전체 문구. QuestCodex 웹 prep.enemyKill·enemy.target.Savage 와 같다.
+    public static string EnemyKill => L("처치 대상", "Kill targets", "Цели убийства");
+    public static string EnemyShot => L("명중 대상", "Hit targets", "Цели попаданий");
+    public static string EnemyBoth => L("인정되는 적", "Counted enemies", "Засчитываемые противники"); // 처치·명중이 한 목표에 같이 있을 때 말풍선 제목
+    public static string AnyScavSide => L("모든 스캐브 진영 AI (보스·경호원·레이더·로그 포함)",
+        "Any Scav-side AI (incl. bosses, guards, Raiders, Rogues)",
+        "Любые Дикие (включая боссов, свиту, Рейдеров, Отступников)");
 
     public static string HeaderTrader => L("상인", "Trader", "Торговец");
     public static string HeaderQuest => L("임무", "Quest", "Задание");
