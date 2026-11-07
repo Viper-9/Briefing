@@ -92,6 +92,24 @@ public sealed class DoorDraw
     public string Label { get; }
 }
 
+// 보스 출현 구역 하나. OtherFloor 면 다른 층이라 흐리게, Minor 면 구역 보스가 전부 준보스(레이더·로그 등)라 색을 달리한다.
+// Lines 는 말풍선 줄(BossLine).
+public sealed class BossDraw
+{
+    public BossDraw(MapUv at, bool otherFloor, bool minor, IReadOnlyList<string> lines)
+    {
+        At = at;
+        OtherFloor = otherFloor;
+        Minor = minor;
+        Lines = lines;
+    }
+
+    public MapUv At { get; }
+    public bool OtherFloor { get; }
+    public bool Minor { get; }
+    public IReadOnlyList<string> Lines { get; }
+}
+
 public sealed class FloorDraw
 {
     public FloorDraw(int level, string name, bool selected, bool dot)
@@ -139,10 +157,11 @@ public sealed class MapSceneInput
     public bool ShowExitTransit { get; set; } = true;
     public bool ShowDoors { get; set; } = true;
     public bool ShowAreas { get; set; } = true;
+    public bool ShowBosses { get; set; } = true;
     public string EmphasisQuestId { get; set; }
 }
 
-// 아래에서부터 지도, 구역, 잠긴 문, 탈출구, 퀘스트 마커 순으로 쌓인다. Signature 는 강조를 뺀 모양이다.
+// 아래에서부터 지도, 구역, 잠긴 문, 보스, 탈출구, 퀘스트 마커 순으로 쌓인다. Signature 는 강조를 뺀 모양이다.
 // 마우스를 올릴 때마다 오버레이를 새로 만들지 않도록, Signature 가 같으면 뷰는 색과 알파만 바꾼다.
 public sealed class MapSceneModel
 {
@@ -150,6 +169,9 @@ public sealed class MapSceneModel
     public IReadOnlyList<FloorDraw> Floors { get; set; }
     public IReadOnlyList<AreaDraw> Areas { get; set; }
     public IReadOnlyList<DoorDraw> Doors { get; set; }
+    public IReadOnlyList<BossDraw> Bosses { get; set; }          // 보스 체크박스가 꺼져 있으면 빈 목록
+    public IReadOnlyList<string> UnplacedBosses { get; set; }    // 위치 미정 보스 줄. 체크박스 말풍선용이라 꺼져 있어도 채운다
+    public bool HasBossData { get; set; }                        // 구역이나 위치 미정 보스가 하나라도 있는지
     public IReadOnlyList<ExitDraw> Exits { get; set; }
     public IReadOnlyList<MarkerDraw> Markers { get; set; }
     public string Credit { get; set; }
@@ -209,6 +231,17 @@ public static class MapScene
             : map.LockedDoors.Where(d => d?.Position != null && MapProjection.LayerFor(def, d.Position).Level == level)
                 .Select(d => new DoorDraw(Place(def, d.Position), DoorLabel(d)))
                 .ToList();
+        // 보스도 탈출구처럼 층과 상관없이 다 그리고 다른 층 것을 먼저 그린다.
+        var bossData = map.Bosses ?? new BriefingBosses();
+        var bosses = !input.ShowBosses
+            ? new List<BossDraw>()
+            : bossData.Zones.Where(z => z?.Position != null)
+                .Select(z => new BossDraw(Place(def, z.Position), MapProjection.LayerFor(def, z.Position).Level != level,
+                    z.Bosses.Count > 0 && z.Bosses.All(b => b?.Kind == "minor"),
+                    z.Bosses.Where(b => b != null).Select(BossLine.Of).ToList()))
+                .OrderBy(b => b.OtherFloor ? 0 : 1)
+                .ToList();
+        var unplaced = bossData.Unplaced.Where(b => b != null).Select(BossLine.Of).ToList();
         // 탈출구는 층과 상관없이 다 그린다. 다른 층 것을 먼저 그려 지금 층 것이 위에 오게 한다.
         var exits = map.Exits.Where(e => e?.Position != null && ExitShown(e.Kind, input))
             .Select(e => new ExitDraw(e.Kind, Place(def, e.Position), MapProjection.LayerFor(def, e.Position).Level != level,
@@ -229,10 +262,13 @@ public static class MapScene
             Floors = floors,
             Areas = areas,
             Doors = doors,
+            Bosses = bosses,
+            UnplacedBosses = unplaced,
+            HasBossData = bossData.Zones.Any(z => z != null) || unplaced.Count > 0,
             Exits = exits,
             Markers = markers,
             Credit = string.IsNullOrEmpty(a?.Author) ? null : Texts.MapCredit(a.Author, a.License),
-            Signature = Signature(map, level, input, markers, areas, doors, exits),
+            Signature = Signature(map, level, input, markers, areas, doors, bosses, exits),
         };
     }
 
@@ -354,7 +390,8 @@ public static class MapScene
     }
 
     private static string Signature(BriefingMap map, int level, MapSceneInput input, IEnumerable<MarkerDraw> markers,
-        IReadOnlyCollection<AreaDraw> areas, IReadOnlyCollection<DoorDraw> doors, IReadOnlyCollection<ExitDraw> exits)
+        IReadOnlyCollection<AreaDraw> areas, IReadOnlyCollection<DoorDraw> doors, IReadOnlyCollection<BossDraw> bosses,
+        IReadOnlyCollection<ExitDraw> exits)
     {
         var c = CultureInfo.InvariantCulture;
         var marks = string.Join(",", markers.Select(m => string.Format(c, "{0}:{1}:{2:R}:{3:R}", m.QuestId, m.N, m.At.U, m.At.V)));
@@ -364,8 +401,10 @@ public static class MapScene
         var locks = string.Join(",", doors.Select(d => string.Format(c, "{0:R}:{1:R}:{2}", d.At.U, d.At.V, d.Label)));
         var outs = string.Join(",", exits.Select(e => string.Format(c, "{0}:{1:R}:{2:R}:{3}:{4}:{5}",
             e.Kind, e.At.U, e.At.V, e.OtherFloor ? 1 : 0, e.Title, e.Detail)));
-        return string.Format(c, "{0}|{1}|{2}{3}{4}{5}{6}|{7}|{8}|{9}|{10}|{11}",
-            map.Key, level, input.ShowExitPmc ? 1 : 0, input.ShowExitScav ? 1 : 0, input.ShowExitTransit ? 1 : 0, input.ShowDoors ? 1 : 0, input.ShowAreas ? 1 : 0, Texts.Language,
-            zones, locks, outs, marks);
+        var skulls = string.Join(",", bosses.Select(b => string.Format(c, "{0:R}:{1:R}:{2}:{3}:{4}",
+            b.At.U, b.At.V, b.OtherFloor ? 1 : 0, b.Minor ? 1 : 0, string.Join(";", b.Lines))));
+        return string.Format(c, "{0}|{1}|{2}{3}{4}{5}{6}{7}|{8}|{9}|{10}|{11}|{12}|{13}",
+            map.Key, level, input.ShowExitPmc ? 1 : 0, input.ShowExitScav ? 1 : 0, input.ShowExitTransit ? 1 : 0, input.ShowDoors ? 1 : 0, input.ShowAreas ? 1 : 0,
+            input.ShowBosses ? 1 : 0, Texts.Language, zones, locks, skulls, outs, marks);
     }
 }
