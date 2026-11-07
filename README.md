@@ -16,13 +16,15 @@ exactly as QuestCodex reads them.
 ## Requirements
 
 - SPT `~4.1.6`
-- **[QuestCodex](https://github.com/Viper-9/QuestCodex) 1.9.0 or later** (server mod). It provides the briefing data
+- **[QuestCodex](https://github.com/Viper-9/QuestCodex), latest version** (server mod). It provides the briefing data
   and the map files. Without it, the tab only shows a "QuestCodex is required" notice.
+  - Briefing and QuestCodex are released together, so update both at the same time. With an older QuestCodex, some
+    newer features just don't appear.
 - Optional: DrakiaXYZ's **QuestTracker**, to [track quests from the briefing](#tracking-quests).
 
 ## Installation
 
-1. Install QuestCodex 1.9.0 or later first.
+1. Install the latest QuestCodex first.
 2. Download `Briefing-<version>.zip` for the version you want from [Releases](../../releases).
 3. Extract it and overwrite the resulting `BepInEx` folder into your SPT install root (the folder containing
    `EscapeFromTarkov.exe`). (`BepInEx/plugins/Briefing/...` structure)
@@ -77,6 +79,14 @@ Quests with a Kappa or Lightkeeper badge get a line such as "Needed to unlock Li
   it's done.
 - **SHOW IN TASKS** switches to the tasks tab with that quest expanded.
 
+![Kill targets](media/quest-kill-targets.png)
+
+- Kill and hit objectives get a **Kill targets** line with the enemies that count, for objectives like "Locate and
+  neutralize any Boss" whose text doesn't say. Up to three names are shown with `+N more`; hover the line for the
+  full list.
+  - Scav kills without a specific target say "Any Scav-side AI (incl. bosses, guards, Raiders, Rogues)".
+  - There's no line for PMC targets, finished objectives, or when the objective text already names every target.
+
 ![Turn in](media/quest-turn-in.png)
 
 - For a **Ready to turn in** quest, **TURN IN** opens that trader's task screen with the quest selected. You press the
@@ -102,14 +112,26 @@ track or untrack it.
 
 - Quest markers, quest zones, extracts and locked doors on one map. Hover an extract or a locked door to see its
   name, conditions or key.
-- Boss spawn zones are marked with a skull. Hover one to see which bosses can spawn there and their chance. Bosses
-  without a fixed location are listed when you hover the **Bosses** checkbox.
+- Boss spawn zones are marked with a skull (see [Boss spawns](#boss-spawns) below).
 - Toggle **Extracts (PMC / Scav / Transit) · Locked doors · Bosses · Quest zones** with the checkboxes at the top.
 - Switch floors with the floor buttons. A floor button gets a dot when another floor has quest markers.
 - Wheel to zoom, drag to pan, double-click to reset, or use the `+` / `−` buttons.
 - Hovering a quest row highlights only its markers, and clicking a map marker jumps to that quest in the list.
 - The map is QuestCodex's SVG, drawn inside the game. After the first map opens, the other maps are prepared in the
   background.
+
+#### Boss spawns
+
+<img src="media/map-bosses.png" width="480" alt="Boss spawn markers">
+
+- Hover a skull to see which bosses can spawn there and their chance, for example "Sanitar 30%".
+- A red skull is a boss zone. An orange skull is a zone with only Raiders or Rogues.
+- The Cultist Priest is marked "night" and the Goons "rotating". Bosses that need a trigger show "needs a trigger"
+  instead of a chance.
+
+<img src="media/map-bosses-unplaced.png" width="420" alt="Bosses without a fixed location">
+
+- Bosses without a fixed location are listed when you hover the **Bosses** checkbox.
 
 ### Supplies
 
