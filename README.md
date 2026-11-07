@@ -102,7 +102,9 @@ track or untrack it.
 
 - Quest markers, quest zones, extracts and locked doors on one map. Hover an extract or a locked door to see its
   name, conditions or key.
-- Toggle **Extracts (PMC / Scav / Transit) · Locked doors · Quest zones** with the checkboxes at the top.
+- Boss spawn zones are marked with a skull. Hover one to see which bosses can spawn there and their chance. Bosses
+  without a fixed location are listed when you hover the **Bosses** checkbox.
+- Toggle **Extracts (PMC / Scav / Transit) · Locked doors · Bosses · Quest zones** with the checkboxes at the top.
 - Switch floors with the floor buttons. A floor button gets a dot when another floor has quest markers.
 - Wheel to zoom, drag to pan, double-click to reset, or use the `+` / `−` buttons.
 - Hovering a quest row highlights only its markers, and clicking a map marker jumps to that quest in the list.
