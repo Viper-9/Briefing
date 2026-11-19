@@ -372,13 +372,18 @@ internal sealed class BriefingTabHost : MonoBehaviour
             t.OnSelectionChanged += OnNativeSelectionChanged;
             TabSelectPatch.Register(t, OnNativeShown);
         }
+        if (_screen._tabDictionary.TryGetValue(EInventoryTab.Notes, out var notes) && notes != null)
+            TabDeselectPatch.Register(notes, TasksHidden);
     }
+
+    private bool TasksHidden() => _screen != null && _screen._tasksScreen != null && !_screen._tasksScreen.gameObject.activeSelf;
 
     private void UnsubscribeNativeTabs()
     {
         foreach (var t in _nativeTabs)
         {
             TabSelectPatch.Unregister(t);
+            TabDeselectPatch.Unregister(t);
             if (t != null) t.OnSelectionChanged -= OnNativeSelectionChanged;
         }
         _nativeTabs.Clear();
@@ -407,7 +412,7 @@ internal sealed class BriefingTabHost : MonoBehaviour
             if (group != null && !await group.TryHide()) return;
             // 브리핑은 임무 탭 자리의 화면이라 그룹에도 임무 탭을 고른 것으로 둔다. 안 그러면 _selectedTab 이 드롭다운을 열기 전 탭(예: 지도)으로
             // 남아, 그 값을 기준으로 탭을 넘기는 모드(탭 전환 단축키 등)가 엉뚱한 탭으로 가고 화면을 닫을 때 LastSelectedTab 도 그 탭이 된다.
-            // 다음 탭 전환 때 그룹이 임무 탭을 Deselect 하면 이미 닫힌 TasksScreen 을 한 번 더 Close 할 뿐이다(임무 화면에서 브리핑을 열었을 때와 같다).
+            // 다음 탭 전환 때 그룹이 임무 탭을 Deselect 해도, 임무 화면이 꺼져 있으면 TabDeselectPatch 가 TasksScreen.Close 를 건너뛴다.
             if (group != null && _screen._tabDictionary.TryGetValue(EInventoryTab.Notes, out var notes) && notes != null)
                 group._selectedTab = notes;
             _tab.Select();
