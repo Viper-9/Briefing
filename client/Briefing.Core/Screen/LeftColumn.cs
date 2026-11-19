@@ -301,8 +301,9 @@ public static class LeftColumn
         new QuestRow(r.QuestId, r.Name, r.Summary, r.Marker, r.TraderId, r.TraderName, r.TraderInitial, r.Progress,
             r.Fraction, handInReady, r.Kappa, r.Lightkeeper);
 
+    // 스킬 레벨처럼 현재값이 목표를 넘는 조건이 있어 글자도 막대처럼 목표에서 자른다.
     public static string ProgressText(double? current, double? target) =>
-        target == null ? null : $"{Number(current ?? 0)} / {Number(target.Value)}";
+        target == null ? null : $"{Number(Math.Min(current ?? 0, target.Value))} / {Number(target.Value)}";
 
     public static float? Fraction(double? current, double? target)
     {

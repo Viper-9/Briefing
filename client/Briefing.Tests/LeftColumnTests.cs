@@ -173,6 +173,7 @@ public class LeftColumnTests
     [InlineData(2.5d, 10d, "2.5 / 10")]
     [InlineData(1.333d, 4d, "1.33 / 4")]
     [InlineData(null, 3d, "0 / 3")]
+    [InlineData(19d, 4d, "4 / 4")]
     [InlineData(null, null, null)]
     public void Progress_text(double? current, double? target, string expected)
     {
