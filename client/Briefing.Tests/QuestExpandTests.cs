@@ -96,7 +96,7 @@ public class QuestExpandTests
 
         Assert.Equal(new int?[] { 2, 2, null }, lines.Select(l => l.Marker));
         Assert.Null(lines[0].Progress);       // target null → 수치 숨김
-        Assert.Equal("5 / 3", lines[1].Progress); // 목표 current 는 원값
+        Assert.Equal("3 / 3", lines[1].Progress); // 목표를 넘는 current 는 목표에서 자른다
     }
 
     [Fact]
