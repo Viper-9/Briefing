@@ -31,6 +31,7 @@ public class Plugin : BaseUnityPlugin
         PatchOne(harmony, typeof(Patches.RaidStartPatch));
         PatchOne(harmony, typeof(Patches.TabReturnPatch));
         PatchOne(harmony, typeof(Patches.TabClickPatch));
+        PatchOne(harmony, typeof(Patches.TabSelectPatch));
         foreach (var m in harmony.GetPatchedMethods()) Log.Info($"patched {m.DeclaringType?.Name}.{m.Name}");
         Log.Info($"Briefing {Info.Metadata.Version} loaded, bundle: {BundlePath}");
     }
